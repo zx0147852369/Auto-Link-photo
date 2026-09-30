@@ -1,0 +1,55 @@
+{% extends "panel/base.html" %}
+{% block title %}บัญชีผู้ใช้{% endblock %}
+{% block heading %}บัญชีผู้ใช้{% endblock %}
+{% block body %}
+
+<form class="bar" method="get" action="{{ url_for('panel.people') }}">
+  <input type="text" name="q" value="{{ q }}" placeholder="ค้นด้วยอีเมลหรือชื่อ"
+         aria-label="ค้นหาบัญชี">
+  <button class="btn p" type="submit">ค้นหา</button>
+  <div class="pills">
+    <a class="pill{{ ' on' if not only else '' }}" href="{{ url_for('panel.people') }}">ทั้งหมด</a>
+    <a class="pill{{ ' on' if only == 'paid' else '' }}" href="{{ url_for('panel.people', only='paid') }}">ซื้อแพ็กเกจ</a>
+    <a class="pill{{ ' on' if only == 'twofa' else '' }}" href="{{ url_for('panel.people', only='twofa') }}">เปิด 2 ชั้น</a>
+    <a class="pill{{ ' on' if only == 'suspended' else '' }}" href="{{ url_for('panel.people', only='suspended') }}">ถูกระงับ</a>
+  </div>
+</form>
+
+<div class="card">
+  <h2>รายชื่อบัญชี<span class="cnt">แสดง {{ rows|length }} จากทั้งหมด {{ total }} บัญชี</span></h2>
+  {% if rows %}
+  <div class="tw"><table>
+    <thead><tr>
+      <th>บัญชี</th><th>แพ็กเกจ</th><th class="num">Token คงเหลือ</th>
+      <th>สมัครเมื่อ</th><th>เข้าล่าสุด</th><th>สถานะ</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for u in rows %}
+      <tr data-row="{{ u.email }} {{ u.name|lower }}">
+        <td><a href="{{ url_for('panel.person', email=u.email) }}"><span class="who2">
+          <span class="av">{% if u.picture %}<img src="/static/avatars/{{ u.picture }}" alt="">{% else %}{{ (u.name or 'U')[:1]|upper }}{% endif %}</span>
+          <span class="t"><b>{{ u.name }}</b><i>{{ u.email }}</i></span></span></a></td>
+        <td><span class="tag{{ ' b' if u.plan != 'free' else '' }}">{{ u.plan_name }}</span></td>
+        <td class="num">
+          {{ "{:,}".format(u.tokens) }}
+          <div class="bar2" style="margin-top:4px"><i
+            class="{{ 'out' if u.tokens <= 0 else ('low' if u.granted and u.tokens * 100 / u.granted < 15 else '') }}"
+            style="width:{{ (u.tokens * 100 / u.granted) if u.granted else 0 }}%"></i></div>
+        </td>
+        <td>{{ u.created|datefmt }}</td>
+        <td>{{ u.last_login|datefmt }}</td>
+        <td>
+          {% if u.suspended %}<span class="tag r">ระงับ</span>
+          {% else %}<span class="tag g">ใช้งานได้</span>{% endif %}
+          {% if u.totp_enabled %}<span class="tag b">2 ชั้น</span>{% endif %}
+        </td>
+        <td><a class="btn sm" href="{{ url_for('panel.person', email=u.email) }}">จัดการ</a></td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}
+  <div class="empty">ไม่พบบัญชีที่ตรงกับเงื่อนไข</div>
+  {% endif %}
+</div>
+
+{% endblock %}

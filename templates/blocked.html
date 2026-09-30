@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบคัดกรองพบสิ่งผิดปกติ — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+  :root{--ink:#141a24;--ink-2:#48525f;--ink-3:#78838f;--ink-4:#a3acb7;
+        --edge:rgba(255,255,255,.9);--edge-2:rgba(120,135,155,.22);--red:#b3392c;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{color:var(--ink);
+    font-family:"Segoe UI","Sarabun","Noto Sans Thai",-apple-system,Tahoma,sans-serif;
+    font-size:14.5px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;padding:26px;min-height:100vh;
+    background:
+      radial-gradient(760px 520px at 12% -8%, rgba(248,214,208,.5), transparent 62%),
+      radial-gradient(680px 520px at 92% 8%, rgba(206,226,246,.45), transparent 60%),
+      linear-gradient(170deg,#fbf8f8 0%,#f1f3f7 52%,#eaeef5 100%);
+    background-attachment:fixed;}
+  .box{width:100%;max-width:520px;padding:34px 32px 28px;
+    background:rgba(255,255,255,.84);border:1px solid var(--edge);border-radius:18px;
+    box-shadow:0 2px 4px rgba(24,34,48,.05), 0 16px 46px rgba(24,34,48,.1);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .box{-webkit-backdrop-filter:blur(20px) saturate(175%);
+         backdrop-filter:blur(20px) saturate(175%);}
+  }
+  .shield{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;
+    justify-content:center;background:rgba(179,57,44,.1);
+    border:1px solid rgba(179,57,44,.22);margin-bottom:16px;}
+  .shield svg{width:23px;height:23px;fill:none;stroke:var(--red);stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round;}
+  h1{margin:0 0 7px;font-size:19px;font-weight:700;letter-spacing:-.02em;}
+  .sub{margin:0 0 20px;font-size:13.5px;color:var(--ink-3);line-height:1.7;}
+  .file{background:rgba(246,249,252,.9);border:1px solid var(--edge-2);border-radius:10px;
+    padding:11px 13px;margin-bottom:16px;}
+  .file b{display:block;font-size:13px;font-weight:600;word-break:break-all;}
+  .file span{display:block;font-family:"Consolas",monospace;font-size:10.5px;
+    color:var(--ink-4);word-break:break-all;margin-top:3px;}
+  ul{margin:0 0 20px;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;}
+  li{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;
+    color:var(--ink-2);}
+  li i{width:17px;height:17px;border-radius:5px;flex:none;margin-top:2px;
+    background:rgba(179,57,44,.12);position:relative;}
+  li i::after{content:"";position:absolute;left:7.5px;top:3px;width:2px;height:7px;
+    background:var(--red);border-radius:2px;}
+  li i::before{content:"";position:absolute;left:7.5px;top:11.5px;width:2px;height:2px;
+    background:var(--red);border-radius:2px;}
+  li.warn i{background:rgba(190,140,30,.14);}
+  li.warn i::after,li.warn i::before{background:#a8730f;}
+  .acts{display:flex;gap:9px;flex-wrap:wrap;}
+  a{flex:1;text-align:center;font:inherit;font-size:13.5px;font-weight:600;color:#fff;
+    text-decoration:none;border-radius:10px;padding:10px 14px;
+    background:linear-gradient(145deg,#1c78d0,#123a86);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16);transition:background .13s;}
+  a:hover{background:linear-gradient(145deg,#2489e4,#164699);}
+  a.risk{color:var(--red);background:rgba(255,255,255,.86);box-shadow:none;
+    border:1px solid rgba(179,57,44,.3);font-weight:500;}
+  a.risk:hover{background:#fff;}
+  .note{margin:14px 0 0;font-size:11.5px;color:var(--ink-4);line-height:1.6;}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="shield">
+      <svg viewBox="0 0 24 24"><path d="M12 3l8 3.5v5.8c0 4.6-3.3 7.8-8 8.9-4.7-1.1-8-4.3-8-8.9V6.5z"/>
+        <path d="M12 9v4"/><path d="M12 16.2v.1"/></svg>
+    </div>
+    <h1>ระบบคัดกรองพบสิ่งผิดปกติในไฟล์นี้</h1>
+    <p class="sub">ไฟล์นี้อ้างว่าเป็นรูปภาพ แต่ตรวจพบเนื้อหาที่ไม่ควรอยู่ในไฟล์ภาพ
+      จึงยังไม่บันทึกลงเครื่องของคุณ</p>
+
+    <div class="file">
+      <b>{{ name }}</b>
+      <span>{{ url }}</span>
+    </div>
+
+    <ul>
+      {% for i in verdict.issues %}
+      <li class="{{ 'warn' if i.level == 'warn' else '' }}"><i></i>{{ i.text }}</li>
+      {% endfor %}
+    </ul>
+
+    <div class="acts">
+      <a href="/app">กลับไปหน้าเครื่องมือ</a>
+      <a class="risk" href="/api/download?url={{ url|urlencode }}&force=1">บันทึกทั้งที่รู้ความเสี่ยง</a>
+    </div>
+    <p class="note">ถ้าเลือกบันทึกต่อ อย่าเปิดไฟล์นี้ด้วยเบราว์เซอร์หรือดับเบิลคลิกโดยตรง
+      และควรตรวจด้วยโปรแกรมป้องกันไวรัสก่อนทุกครั้ง</p>
+  </div>
+</body>
+</html>

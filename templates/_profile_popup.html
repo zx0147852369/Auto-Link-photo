@@ -1,0 +1,202 @@
+{# ป็อปอัปโปรไฟล์ — ประกอบเสร็จจากเซิร์ฟเวอร์ทั้งก้อน หน้าเว็บแค่เอาไปวาง #}
+<div class="pp-head">
+  {% if user.picture %}
+    <img class="pp-av" src="{{ user.picture|avatar }}" alt="">
+  {% else %}
+    <div class="pp-av txt">{{ (user.name or user.email or "?")[:1]|upper }}</div>
+  {% endif %}
+  <div class="pp-who">
+    <b>{{ user.name or "ผู้ดูแล" }}</b>
+    {% if user.email %}<span>{{ user.email }}</span>{% endif %}
+  </div>
+</div>
+
+{% if err %}<div class="pp-msg err">{{ err }}</div>{% endif %}
+{% if ok %}<div class="pp-msg ok">{{ ok }}</div>{% endif %}
+
+{% if is_admin %}
+  <div class="pp-sec">
+    <div class="pp-hint">คุณเข้าใช้งานด้วยรหัสผ่านผู้ดูแลซึ่งไม่ผูกกับอีเมล
+      จึงไม่มีข้อมูลโปรไฟล์ให้แก้ไข หากต้องการใช้ส่วนนี้ กรุณาสมัครบัญชีผู้ใช้</div>
+    <a class="pp-mini" href="/register" style="margin-top:9px;display:inline-block">สมัครบัญชีผู้ใช้</a>
+  </div>
+  <div class="pp-foot">
+    <a href="{{ url_for('auth.logout') }}" class="pp-out">ออกจากระบบ</a>
+  </div>
+{% else %}
+
+<div class="pp-body">
+<nav class="pp-nav">
+  <button type="button" class="pp-nav-i on" data-nav="profile">โปรไฟล์</button>
+  <button type="button" class="pp-nav-i" data-nav="usage">Token การใช้งาน</button>
+  <button type="button" class="pp-nav-i" data-nav="history">ประวัติการค้นหา</button>
+  <button type="button" class="pp-nav-i" data-nav="email">อีเมล</button>
+  <button type="button" class="pp-nav-i" data-nav="password">รหัสผ่าน</button>
+  <button type="button" class="pp-nav-i" data-nav="twofa">ยืนยันสองชั้น</button>
+</nav>
+<div class="pp-panels">
+
+<div class="pp-sec on" data-sec="profile">
+  <div class="pp-hd"><span>โปรไฟล์</span></div>
+  <div class="pp-avrow">
+    {% if u.picture %}
+      <img class="pp-av2" src="{{ u.picture|avatar }}" alt="">
+    {% else %}
+      <div class="pp-av2 txt">{{ (u.name or "U")[:1]|upper }}</div>
+    {% endif %}
+    <form class="pp-f" data-popup-form data-action="{{ url_for('account.set_picture') }}"
+          method="post" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="file" name="picture" accept="image/*" class="pp-file" required>
+      <div class="pp-row">
+        <button class="pp-btn sm" type="submit">อัปโหลดรูป</button>
+        {% if u.picture %}
+        <button class="pp-btn sm ghost" type="submit" formnovalidate
+                data-action="{{ url_for('account.remove_picture') }}">ลบรูป</button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <form class="pp-f" data-popup-form data-action="{{ url_for('account.set_name') }}" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="pp-lb" for="ppName">ชื่อที่แสดง</label>
+    <input class="pp-in" type="text" id="ppName" name="name" maxlength="60"
+           value="{{ u.name or '' }}" required>
+    <button class="pp-btn sm" type="submit">บันทึกชื่อ</button>
+  </form>
+</div>
+
+<div class="pp-sec" data-sec="usage">
+  <div class="pp-hd"><span>Token การใช้งาน</span></div>
+  {% if bill %}
+    <div class="pp-plan">
+      <span>แพ็กเกจ{{ bill.plan_name }}</span>
+      <b>{{ "{:,}".format(bill.tokens) }}</b>
+    </div>
+    <div class="pp-bar"><i style="width:{{ ((bill.tokens / bill.granted * 100) if bill.granted else 0)|round(0,'floor')|int }}%"></i></div>
+    <div class="pp-hint">ใช้ไปแล้ว {{ "{:,}".format(bill.used) }} จาก {{ "{:,}".format(bill.granted) }} Token ในรอบนี้</div>
+  {% endif %}
+  <form class="pp-f pp-inline" data-popup-form data-action="{{ url_for('account.redeem_code') }}" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input class="pp-in" type="text" name="code" maxlength="19"
+           placeholder="แลกรหัสเติม Token" autocomplete="off">
+    <button class="pp-btn sm" type="submit">แลก</button>
+  </form>
+</div>
+
+<div class="pp-sec" data-sec="history">
+  <div class="pp-hd">
+    <span>ประวัติการค้นหา</span>
+    {% if history %}<button type="button" id="ppHistClear">ล้างทั้งหมด</button>{% endif %}
+  </div>
+  {% if history %}
+    <div class="pp-hist">
+      {% for h in history %}
+      <div class="pp-hi" data-at="{{ h.at }}">
+        <div class="pp-ht">
+          <b>{{ h.title or h.host or h.url }}</b>
+          <span>{{ h.count }} รายการ · {{ h.at|timefmt }}</span>
+        </div>
+        <button type="button" class="pp-hx" data-remove="{{ h.at }}" title="ลบรายการนี้">×</button>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="pp-hint">ยังไม่มีประวัติการค้นหา</div>
+  {% endif %}
+</div>
+
+<div class="pp-sec" data-sec="email">
+  <div class="pp-hd"><span>อีเมล</span></div>
+  <form class="pp-f" data-popup-form data-action="{{ url_for('account.set_email') }}" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="pp-lb" for="ppEmail">อีเมลใหม่</label>
+    <input class="pp-in" type="email" id="ppEmail" name="email" maxlength="254"
+           value="{{ u.email or '' }}" required>
+    <label class="pp-lb" for="ppEmailPw">รหัสผ่านปัจจุบัน</label>
+    <input class="pp-in" type="password" id="ppEmailPw" name="password"
+           autocomplete="current-password" maxlength="128" required>
+    <button class="pp-btn sm" type="submit">เปลี่ยนอีเมล</button>
+  </form>
+</div>
+
+<div class="pp-sec" data-sec="password">
+  <div class="pp-hd"><span>รหัสผ่าน</span></div>
+  <form class="pp-f" data-popup-form data-action="{{ url_for('account.set_pwd') }}" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="pp-lb" for="ppCur">รหัสผ่านปัจจุบัน</label>
+    <input class="pp-in" type="password" id="ppCur" name="current"
+           autocomplete="current-password" maxlength="128" required>
+    <label class="pp-lb" for="ppNew">รหัสผ่านใหม่ (อย่างน้อย {{ min_password }} ตัว มีทั้งพิมพ์ใหญ่เล็ก)</label>
+    <input class="pp-in" type="password" id="ppNew" name="new"
+           autocomplete="new-password" maxlength="128" required>
+    <label class="pp-lb" for="ppNew2">ยืนยันรหัสผ่านใหม่</label>
+    <input class="pp-in" type="password" id="ppNew2" name="new2"
+           autocomplete="new-password" maxlength="128" required>
+    <button class="pp-btn sm" type="submit">เปลี่ยนรหัสผ่าน</button>
+  </form>
+</div>
+
+<div class="pp-sec" data-sec="twofa">
+  <div class="pp-hd"><span>ยืนยันตัวตนสองชั้น</span></div>
+
+  {% if codes %}
+    <div class="pp-bkwrap">
+      <b>รหัสสำรอง — เห็นได้ครั้งเดียวเท่านั้น</b>
+      <p>บันทึกเก็บไว้ในที่ปลอดภัย ใช้แทนรหัสจากแอปได้ชุดละหนึ่งครั้ง</p>
+      <div class="pp-bk">{% for c in codes %}<span>{{ c }}</span>{% endfor %}</div>
+      <button type="button" id="ppCpBk" class="pp-btn sm">คัดลอกรหัสทั้งหมด</button>
+    </div>
+  {% elif setup %}
+    <div class="pp-setup">
+      <p class="pp-hint">สแกนรหัส QR ด้วยแอปยืนยันตัวตน (Google Authenticator, Authy ฯลฯ)
+        หรือกรอกกุญแจด้วยตัวเอง</p>
+      {% if setup.qr %}<div class="pp-qr">{{ setup.qr|safe }}</div>{% endif %}
+      <div class="pp-key">{{ setup.pretty }}</div>
+      <form class="pp-f" data-popup-form data-action="{{ url_for('account.totp_enable') }}" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <label class="pp-lb" for="ppCode">กรอกรหัส 6 หลักจากแอปเพื่อยืนยัน</label>
+        <input class="pp-in pp-code" type="text" id="ppCode" name="code" inputmode="numeric"
+               maxlength="6" autocomplete="one-time-code" autofocus required>
+        <button class="pp-btn sm" type="submit">ยืนยันและเปิดใช้งาน</button>
+      </form>
+    </div>
+  {% else %}
+    <div class="pp-tf {{ 'on' if totp_on else 'off' }}">
+      <i></i>
+      <span>{{ "เปิดใช้งานอยู่" if totp_on else "ยังไม่ได้เปิดใช้งาน" }}</span>
+      {% if totp_on %}<span class="pp-mini">รหัสสำรองเหลือ {{ backup_left }} ชุด</span>{% endif %}
+    </div>
+
+    {% if not totp_on %}
+      <form class="pp-f" data-popup-form data-action="{{ url_for('account.totp_start') }}" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="pp-btn sm" type="submit">เริ่มตั้งค่าการยืนยันสองชั้น</button>
+      </form>
+    {% else %}
+      <form class="pp-f" data-popup-form data-action="{{ url_for('account.totp_backup') }}" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <label class="pp-lb" for="ppBkPw">สร้างรหัสสำรองชุดใหม่ — รหัสผ่านปัจจุบัน</label>
+        <input class="pp-in" type="password" id="ppBkPw" name="password"
+               autocomplete="current-password" maxlength="128" required>
+        <button class="pp-btn sm" type="submit">สร้างชุดใหม่</button>
+      </form>
+      <form class="pp-f" data-popup-form data-action="{{ url_for('account.totp_disable') }}" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <label class="pp-lb" for="ppOffPw">ปิดการยืนยันสองชั้น — รหัสผ่านปัจจุบัน</label>
+        <input class="pp-in" type="password" id="ppOffPw" name="password"
+               autocomplete="current-password" maxlength="128" required>
+        <button class="pp-btn sm ghost" type="submit">ปิดการใช้งาน</button>
+      </form>
+    {% endif %}
+  {% endif %}
+</div>
+
+</div>
+</div>
+
+<div class="pp-foot">
+  <a href="{{ url_for('auth.logout') }}" class="pp-out">ออกจากระบบ</a>
+</div>
+{% endif %}

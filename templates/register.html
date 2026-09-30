@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สมัครสมาชิก — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+{% include "_auth.css" %}
+  .rules{margin-top:9px;background:rgba(240,245,251,.85);border:1px solid var(--edge-2);
+    border-radius:10px;padding:10px 12px;}
+  .rules .hd{font-size:11px;font-weight:600;color:var(--ink-3);margin-bottom:7px;}
+  .rules ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .rules li{display:flex;align-items:center;gap:8px;font-size:12px;
+    color:var(--ink-3);transition:color .14s;}
+  .rules li i{width:15px;height:15px;border-radius:50%;flex:none;position:relative;
+    border:1.5px solid #c4ccd6;background:#fff;transition:.14s;}
+  .rules li i::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+    border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(42deg) scale(.4);
+    opacity:0;transition:.14s;}
+  .rules li.ok{color:var(--ok);}
+  .rules li.ok i{background:#1a6b46;border-color:#1a6b46;}
+  .rules li.ok i::after{opacity:1;transform:rotate(42deg) scale(1);}
+  .match{font-size:11.5px;margin-top:6px;display:none;}
+  .match.bad{display:block;color:var(--red);}
+  .match.good{display:block;color:var(--ok);}
+  .strength{height:4px;border-radius:3px;background:rgba(120,135,155,.2);
+    margin-top:9px;overflow:hidden;}
+  .strength i{display:block;height:100%;width:0;border-radius:3px;
+    background:#c9503f;transition:width .22s ease, background .22s ease;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <section class="side">
+    <div class="side-in">
+      <img class="mark" src="/static/icon.png" alt="">
+      <h2>AUTO LINK <em>PHOTO</em></h2>
+      <p class="tag">สมัครครั้งเดียว ใช้งานได้ทันที ไม่ต้องยืนยันอีเมล</p>
+      <ul>
+        <li><i></i>ค้นได้ถึงรูปที่ซ่อนอยู่ในไฟล์สไตล์ สคริปต์ และเฟรมย่อย</li>
+        <li><i></i>สืบค้นไฟล์ต้นฉบับที่คมชัดกว่าที่แสดงในหน้า</li>
+        <li><i></i>คัดลอกลิงก์ทีละรูป หลายรูปพร้อมกัน หรือบันทึกเป็น ZIP</li>
+      </ul>
+      <div class="base">รหัสผ่านถูกเข้ารหัสแบบทางเดียว ระบบไม่เก็บรหัสผ่านจริงของคุณ</div>
+    </div>
+  </section>
+
+  <section class="pane">
+    <h1>สมัครสมาชิก</h1>
+    <p class="sub">กรอกข้อมูลด้านล่างเพื่อเริ่มใช้งาน</p>
+
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+
+    <form method="post" action="{{ url_for('auth.do_register') }}" id="f">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+      <div class="fld">
+        <label class="f" for="name">ชื่อที่ต้องการแสดง</label>
+        <input type="text" id="name" name="name" value="{{ form.name or '' }}"
+               maxlength="60" autocomplete="name" autofocus required>
+      </div>
+
+      <div class="fld">
+        <label class="f" for="email">อีเมล</label>
+        <input type="email" id="email" name="email" value="{{ form.email or '' }}"
+               maxlength="254" autocomplete="email" required>
+      </div>
+
+      <div class="fld">
+        <label class="f" for="password">รหัสผ่าน</label>
+        <input type="password" id="password" name="password"
+               maxlength="128" autocomplete="new-password" required>
+        <div class="strength"><i id="bar"></i></div>
+        <div class="rules">
+          <div class="hd">รหัสผ่านต้องมีครบทุกข้อ</div>
+          <ul>
+            <li id="r-len"><i></i>ยาวอย่างน้อย {{ min_password }} ตัวอักษร</li>
+            <li id="r-up"><i></i>มีตัวอักษรพิมพ์ใหญ่ เช่น A B C</li>
+            <li id="r-low"><i></i>มีตัวอักษรพิมพ์เล็ก เช่น a b c</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label class="f" for="password2">ยืนยันรหัสผ่าน</label>
+        <input type="password" id="password2" name="password2"
+               maxlength="128" autocomplete="new-password" required>
+        <div class="match" id="match"></div>
+      </div>
+
+      <button class="go" type="submit">สมัครสมาชิก</button>
+    </form>
+
+    <div class="foot">มีบัญชีอยู่แล้ว? <a href="{{ url_for('auth.login') }}">เข้าสู่ระบบ</a></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var MIN = {{ min_password }};
+  var p1=document.getElementById("password"), p2=document.getElementById("password2"),
+      m=document.getElementById("match"), bar=document.getElementById("bar");
+  var rows={len:document.getElementById("r-len"),
+            up:document.getElementById("r-up"),
+            low:document.getElementById("r-low")};
+
+  function pass(v){
+    return {len:v.length>=MIN, up:/[A-Z]/.test(v), low:/[a-z]/.test(v)};
+  }
+
+  function check(){
+    var v=p1.value||"", r=pass(v);
+    rows.len.classList.toggle("ok",r.len);
+    rows.up.classList.toggle("ok",r.up);
+    rows.low.classList.toggle("ok",r.low);
+
+    var score=(r.len?1:0)+(r.up?1:0)+(r.low?1:0);
+    if(score===3){ if(/\d/.test(v)) score++; if(v.length>=12) score++; }
+    var pct=[0,20,42,66,84,100][score] || 0;
+    bar.style.width=pct+"%";
+    bar.style.background = score<3 ? "#c9503f" : (score<5 ? "#c98a2c" : "#1a6b46");
+    matchCheck();
+  }
+  function matchCheck(){
+    if(!p2.value){ m.className="match"; m.textContent=""; return; }
+    var ok=p1.value===p2.value;
+    m.className="match "+(ok?"good":"bad");
+    m.textContent=ok?"รหัสผ่านตรงกัน":"รหัสผ่านทั้งสองช่องยังไม่ตรงกัน";
+  }
+
+  p1.addEventListener("input",check);
+  p2.addEventListener("input",matchCheck);
+  check();
+
+  document.getElementById("f").addEventListener("submit",function(e){
+    var v=p1.value||"", r=pass(v);
+    if(!(r.len&&r.up&&r.low)){
+      e.preventDefault(); p1.focus();
+      p1.setCustomValidity("รหัสผ่านยังไม่ครบตามเงื่อนไข"); p1.reportValidity();
+      setTimeout(function(){ p1.setCustomValidity(""); },10); return;
+    }
+    if(p1.value!==p2.value){
+      e.preventDefault(); p2.focus();
+      p2.setCustomValidity("รหัสผ่านทั้งสองช่องไม่ตรงกัน"); p2.reportValidity();
+      setTimeout(function(){ p2.setCustomValidity(""); },10);
+    }
+  });
+})();
+</script>
+</body>
+</html>

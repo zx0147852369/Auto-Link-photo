@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var t=localStorage.getItem("alp-theme");var d=t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();</script>
+<title>Auto Link Photo — ดึงลิงก์รูปภาพต้นฉบับจากหน้าเว็บ</title>
+<meta name="description" content="ค้นหารูปภาพทุกซอกทุกมุมของหน้าเว็บ คัดกรองไฟล์ที่ไม่น่าไว้ใจ และเก็บทุกอย่างไว้บนเครื่องคุณเอง">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+  :root{
+    --ink:#101620;
+    --ink-2:#414c5b;
+    --ink-3:#5f6a78;
+    --ink-4:#646f7d;
+    --line:#e2e7ee;
+    --line-2:#eef1f5;
+    --card:rgba(255,255,255,.72);
+    --card-2:rgba(255,255,255,.9);
+    --edge:rgba(255,255,255,.9);
+    --edge-2:rgba(120,135,155,.2);
+    --navy:#123a86;
+    --navy-2:#1c6fd0;
+    --cyan:#0fbcf0;
+    --sel:#e7eefa;
+    --ok:#1a6b46;
+    --warn:#8a5a11;
+    --red:#b3392c;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{margin:0;padding:0;}
+  body{
+    color:var(--ink);
+    font-family:"Segoe UI","Sarabun","Noto Sans Thai",-apple-system,BlinkMacSystemFont,Tahoma,sans-serif;
+    font-size:15px;line-height:1.72;-webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(820px 560px at 8% -10%, rgba(190,218,250,.6), transparent 60%),
+      radial-gradient(720px 520px at 98% 2%, rgba(196,236,252,.5), transparent 58%),
+      radial-gradient(900px 620px at 46% 106%, rgba(206,222,244,.45), transparent 62%),
+      linear-gradient(178deg,#f8fbfe 0%,#f1f5fa 46%,#eef2f8 100%);
+    background-attachment:fixed;
+  }
+  ::selection{background:#cfe0f7;}
+  a{color:inherit;text-decoration:none;}
+  .w{max-width:1140px;margin:0 auto;padding:0 26px;}
+
+  .grad{background:linear-gradient(100deg,#0fbcf0,#1c6fd0 46%,#123a86);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+
+  /* ---------------- แถบนำทาง ---------------- */
+  nav{position:sticky;top:0;z-index:60;background:rgba(248,251,254,.78);
+    border-bottom:1px solid var(--edge-2);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    nav{background:rgba(248,251,254,.62);
+      -webkit-backdrop-filter:blur(18px) saturate(175%);
+      backdrop-filter:blur(18px) saturate(175%);}
+  }
+  .nv{display:flex;align-items:center;gap:11px;height:62px;}
+  .nv img{width:33px;height:33px;object-fit:contain;}
+  .nv .nm{font-size:15.5px;font-weight:800;letter-spacing:-.025em;}
+  .nv .nm span{font-weight:500;}
+  .lk{margin-left:32px;display:flex;gap:5px;}
+  .lk a{font-size:13.5px;font-weight:500;color:var(--ink-2);padding:6px 13px;
+    border-radius:20px;transition:background .14s, color .14s;}
+  .lk a:hover{background:var(--sel);color:var(--navy);}
+  .act{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .b{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;
+    border:1px solid var(--edge-2);background:rgba(255,255,255,.86);color:var(--ink-2);
+    padding:8px 17px;border-radius:11px;transition:.14s;}
+  .b:hover{background:#fff;color:var(--ink);border-color:rgba(28,111,208,.42);}
+  .b.p{border-color:transparent;color:#fff;
+    background:linear-gradient(140deg,#2183e2,#123a86);
+    box-shadow:0 2px 10px rgba(18,58,134,.26), inset 0 1px 0 rgba(255,255,255,.2);}
+  .b.p:hover{color:#fff;background:linear-gradient(140deg,#2f92f0,#164699);
+    box-shadow:0 4px 16px rgba(18,58,134,.32), inset 0 1px 0 rgba(255,255,255,.2);}
+  .b.lg{font-size:15px;padding:13px 28px;border-radius:13px;}
+
+  /* ---------------- หัวเรื่อง ---------------- */
+  .hero{padding:76px 0 30px;text-align:center;}
+  .chip{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;
+    color:var(--navy);background:rgba(28,111,208,.09);
+    border:1px solid rgba(28,111,208,.2);border-radius:30px;padding:6px 16px;margin-bottom:24px;}
+  .chip i{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex:none;
+    box-shadow:0 0 0 3px rgba(15,188,240,.22);}
+  h1{margin:0 0 18px;font-size:clamp(32px,5.4vw,58px);font-weight:800;
+    letter-spacing:-.042em;line-height:1.1;}
+  .lead{margin:0 auto 30px;max-width:620px;font-size:17px;color:var(--ink-2);line-height:1.75;}
+  .cta{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;}
+  .fine{margin-top:16px;font-size:12.5px;color:var(--ink-4);}
+
+  /* ---------------- แถบตัวเลข ---------------- */
+  .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;margin:58px 0 0;background:var(--edge-2);
+    border:1px solid var(--edge-2);border-radius:18px;overflow:hidden;}
+  .nu{background:var(--card-2);padding:22px 18px;text-align:center;}
+  .nu b{display:block;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1;
+    background:linear-gradient(100deg,#0fbcf0,#123a86);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .nu span{display:block;font-size:12.5px;color:var(--ink-3);margin-top:5px;}
+
+  /* ---------------- ส่วน ---------------- */
+  section{padding:82px 0;}
+  .shd{text-align:center;max-width:640px;margin:0 auto 46px;}
+  .kick{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--navy-2);margin-bottom:12px;}
+  h2{margin:0 0 13px;font-size:clamp(24px,3.4vw,34px);font-weight:800;
+    letter-spacing:-.032em;line-height:1.26;}
+  .shd p{margin:0;font-size:15.5px;color:var(--ink-3);line-height:1.75;}
+
+  /* ---------------- ตารางเบนโตะ ---------------- */
+  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;}
+  .bx{background:var(--card);border:1px solid var(--edge);border-radius:20px;
+    padding:26px 24px;position:relative;overflow:hidden;
+    box-shadow:0 1px 2px rgba(18,32,52,.04), 0 10px 30px rgba(18,32,52,.05);
+    transition:transform .18s cubic-bezier(.2,.8,.3,1), box-shadow .18s;}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .bx{-webkit-backdrop-filter:blur(16px) saturate(165%);
+        backdrop-filter:blur(16px) saturate(165%);}
+  }
+  .bx:hover{transform:translateY(-3px);box-shadow:0 4px 10px rgba(18,32,52,.07),
+    0 18px 44px rgba(18,32,52,.1);}
+  .bx.w3{grid-column:span 3;} .bx.w2{grid-column:span 2;}
+  .bx.w4{grid-column:span 4;} .bx.w6{grid-column:span 6;}
+  .ic{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;
+    justify-content:center;margin-bottom:16px;background:var(--sel);
+    border:1px solid rgba(28,111,208,.16);}
+  .ic svg{width:20px;height:20px;fill:none;stroke:var(--navy-2);stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round;}
+  .bx h3{margin:0 0 8px;font-size:17px;font-weight:700;letter-spacing:-.022em;}
+  .bx p{margin:0;font-size:13.5px;color:var(--ink-3);line-height:1.75;}
+  .bx .big{font-size:19px;letter-spacing:-.026em;}
+
+  /* ---------------- บทความ ---------------- */
+  .doc{max-width:820px;margin:0 auto;background:var(--card);
+    border:1px solid var(--edge);border-radius:22px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(18,32,52,.04), 0 14px 40px rgba(18,32,52,.07);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .doc{-webkit-backdrop-filter:blur(16px) saturate(165%);
+         backdrop-filter:blur(16px) saturate(165%);}
+  }
+  .dochd{padding:30px 34px 24px;border-bottom:1px solid var(--edge-2);
+    background:linear-gradient(135deg,rgba(28,111,208,.06),rgba(15,188,240,.04));}
+  .dochd .tagx{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--navy-2);background:rgba(28,111,208,.1);
+    border-radius:20px;padding:3px 12px;margin-bottom:13px;}
+  .dochd h3{margin:0 0 8px;font-size:22px;font-weight:800;letter-spacing:-.028em;
+    line-height:1.34;}
+  .dochd p{margin:0;font-size:13.5px;color:var(--ink-3);line-height:1.7;}
+  .docbd{padding:8px 34px 30px;}
+  .cl{padding:22px 0;border-bottom:1px solid var(--line-2);}
+  .cl:last-of-type{border-bottom:none;}
+  .cl h4{margin:0 0 9px;font-size:15.5px;font-weight:700;letter-spacing:-.018em;
+    display:flex;align-items:baseline;gap:11px;}
+  .cl h4 u{text-decoration:none;font-family:"Consolas","Courier New",monospace;
+    font-size:12px;font-weight:700;color:var(--navy-2);flex:none;}
+  .cl p{margin:0 0 10px;font-size:13.8px;color:var(--ink-2);line-height:1.85;}
+  .cl p:last-child{margin-bottom:0;}
+  .cl ul{margin:0 0 10px;padding:0;list-style:none;}
+  .cl li{position:relative;padding-left:18px;font-size:13.5px;color:var(--ink-2);
+    line-height:1.8;margin-bottom:5px;}
+  .cl li::before{content:"";position:absolute;left:1px;top:11px;width:7px;height:7px;
+    border-radius:50%;background:rgba(28,111,208,.28);}
+  .note{margin-top:14px;padding:14px 16px;border-radius:13px;font-size:12.8px;
+    line-height:1.75;background:rgba(28,111,208,.06);
+    border:1px solid rgba(28,111,208,.16);color:var(--ink-2);}
+  .note b{color:var(--navy);}
+  .docft{padding:18px 34px;border-top:1px solid var(--edge-2);
+    background:rgba(255,255,255,.4);font-size:12px;color:var(--ink-4);line-height:1.7;}
+
+  /* ---------------- ระดับการค้นหา ---------------- */
+  .lv{display:grid;grid-template-columns:repeat(auto-fit,minmax(276px,1fr));gap:16px;}
+  .lvc{background:var(--card);border:1px solid var(--edge);border-radius:20px;
+    padding:26px 24px;display:flex;flex-direction:column;position:relative;
+    box-shadow:0 1px 2px rgba(18,32,52,.04), 0 10px 30px rgba(18,32,52,.05);}
+  .lvc.best{border-color:rgba(28,111,208,.42);
+    box-shadow:0 0 0 3px rgba(28,111,208,.1), 0 14px 40px rgba(18,32,52,.1);}
+  .lvc .rec{position:absolute;top:-11px;left:24px;font-size:11px;font-weight:700;
+    color:#fff;background:linear-gradient(140deg,#2183e2,#123a86);
+    border-radius:20px;padding:3px 13px;letter-spacing:.02em;}
+  .lvc h3{margin:0 0 6px;font-size:19px;font-weight:800;letter-spacing:-.026em;}
+  .lvc .sm{margin:0 0 18px;font-size:13px;color:var(--ink-3);line-height:1.65;}
+  .lvc ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .lvc li{display:flex;gap:10px;align-items:flex-start;font-size:13.2px;
+    color:var(--ink-2);line-height:1.6;}
+  .lvc li i{width:17px;height:17px;border-radius:50%;flex:none;margin-top:2px;
+    background:rgba(28,111,208,.13);position:relative;}
+  .lvc li i::after{content:"";position:absolute;left:5.5px;top:3px;width:4px;height:7.5px;
+    border:solid var(--navy-2);border-width:0 1.8px 1.8px 0;transform:rotate(42deg);}
+  .lvc li.off{color:var(--ink-4);}
+  .lvc li.off i{background:rgba(120,135,155,.14);}
+  .lvc li.off i::after{border-color:rgba(120,135,155,.5);}
+
+  /* ---------------- คำถาม ---------------- */
+  .faq{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:11px;}
+  details{background:var(--card);border:1px solid var(--edge);border-radius:16px;
+    overflow:hidden;transition:border-color .14s;}
+  details[open]{border-color:rgba(28,111,208,.32);}
+  summary{padding:18px 22px;cursor:pointer;font-size:15px;font-weight:600;
+    list-style:none;display:flex;align-items:center;gap:14px;user-select:none;
+    letter-spacing:-.014em;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:"";margin-left:auto;width:9px;height:9px;flex:none;
+    border-right:2px solid var(--ink-4);border-bottom:2px solid var(--ink-4);
+    transform:rotate(45deg) translateY(-2px);transition:transform .2s;}
+  details[open] summary::after{transform:rotate(-135deg) translateY(-2px);}
+  summary:hover{color:var(--navy);}
+  .ans{padding:0 22px 20px;font-size:13.6px;color:var(--ink-2);line-height:1.88;}
+
+  /* ---------------- ปิดท้าย ---------------- */
+  .end{text-align:center;border-radius:26px;padding:58px 34px;position:relative;
+    overflow:hidden;background:linear-gradient(150deg,#123a86,#0e2b63 52%,#0a1f4a);
+    color:#fff;}
+  .end::after{content:"";position:absolute;right:-110px;top:-110px;width:340px;height:340px;
+    border-radius:50%;background:rgba(255,255,255,.05);}
+  .end::before{content:"";position:absolute;left:-90px;bottom:-140px;width:300px;height:300px;
+    border-radius:50%;background:rgba(15,188,240,.14);}
+  .end > *{position:relative;z-index:1;}
+  .end h2{margin:0 0 11px;color:#fff;}
+  .end p{margin:0 auto 28px;max-width:440px;font-size:15px;color:rgba(255,255,255,.72);}
+  .end .b{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff;}
+  .end .b:hover{background:rgba(255,255,255,.18);color:#fff;
+    border-color:rgba(255,255,255,.34);}
+  .end .b.p{background:#fff;color:#123a86;border-color:#fff;box-shadow:none;}
+  .end .b.p:hover{background:#eaf2fd;color:#123a86;}
+
+  footer{border-top:1px solid var(--edge-2);background:rgba(255,255,255,.45);}
+  .ft{padding:32px 0;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:26px;}
+  .ft .br{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .ft .br img{width:28px;height:28px;object-fit:contain;}
+  .ft .br b{font-size:14px;font-weight:800;letter-spacing:-.02em;}
+  .ft p{margin:0;font-size:12.5px;color:var(--ink-4);line-height:1.75;max-width:330px;}
+  .ft h4{margin:0 0 11px;font-size:11px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-4);}
+  .ft a{display:block;font-size:13px;color:var(--ink-2);margin-bottom:7px;}
+  .ft a:hover{color:var(--navy);}
+  .ftend{border-top:1px solid var(--edge-2);padding:16px 0;font-size:12px;
+    color:var(--ink-4);display:flex;gap:16px;flex-wrap:wrap;}
+
+  @media(max-width:900px){
+    .w{padding:0 17px;}
+    .lk{display:none;}
+    .hero{padding:52px 0 20px;}
+    section{padding:56px 0;}
+    .bento{grid-template-columns:1fr;}
+    .bx.w3,.bx.w2,.bx.w4,.bx.w6{grid-column:span 1;}
+    .dochd,.docbd,.docft{padding-left:22px;padding-right:22px;}
+    .ft{grid-template-columns:1fr;}
+    .end{padding:42px 22px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;} *{transition:none !important;}
+  }
+</style>
+<link rel="stylesheet" href="/static/theme.css">
+</head>
+<body>
+
+<nav>
+  <div class="w nv">
+    <img src="/static/icon.png" alt="">
+    <div class="nm grad">AUTO LINK <span>PHOTO</span></div>
+    <div class="lk">
+      <a href="#what">ความสามารถ</a>
+      <a href="#policy">แนวปฏิบัติด้านข้อมูล</a>
+      <a href="#levels">ระดับการค้นหา</a>
+      <a href="#faq">คำถาม</a>
+    </div>
+    <div class="act">
+      <button class="thbtn" data-theme-toggle type="button"><svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg><svg class="moon" viewBox="0 0 24 24"><path d="M20 14.2A8.2 8.2 0 019.8 4a8.4 8.4 0 102.9 16.3 8.4 8.4 0 007.3-6.1z"/></svg></button>
+      {% if user %}
+        <a class="b p" href="/app">เข้าใช้งาน</a>
+      {% else %}
+        <a class="b" href="/login">เข้าสู่ระบบ</a>
+        <a class="b p" href="/register">สมัครสมาชิก</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="w">
+    <div class="chip"><i></i>ทำงานบนเครื่องคุณเอง ไม่ส่งข้อมูลออกภายนอก</div>
+    <h1>ที่อยู่ไฟล์ภาพต้นฉบับ<br><span class="grad">อยู่ลึกกว่าที่ตาเห็นเสมอ</span></h1>
+    <p class="lead">เว็บสมัยใหม่ซ่อนรูปไว้หลายชั้น และย่อขนาดก่อนแสดงเพื่อให้โหลดเร็ว
+      เครื่องมือนี้อ่านทุกชั้นเหล่านั้น คืนที่อยู่ไฟล์เต็มให้คุณ
+      พร้อมคัดกรองไฟล์ที่ไม่น่าไว้ใจออกก่อนถึงมือ</p>
+    <div class="cta">
+      {% if user %}
+        <a class="b p lg" href="/app">เข้าใช้งานเครื่องมือ</a>
+      {% else %}
+        <a class="b p lg" href="/register">เริ่มใช้งาน</a>
+        <a class="b lg" href="/login">เข้าสู่ระบบ</a>
+      {% endif %}
+    </div>
+    <div class="fine">สมัครครั้งเดียว ใช้ได้ทันที · ไม่มีค่าใช้จ่าย · ไม่ต้องยืนยันอีเมล</div>
+
+    <div class="nums">
+      <div class="nu"><b>8+</b><span>แหล่งที่ระบบเข้าไปอ่านในแต่ละหน้า</span></div>
+      <div class="nu"><b>3</b><span>ระดับความลึก เลือกตามงาน</span></div>
+      <div class="nu"><b>2</b><span>ชั้นการยืนยันตัวตน</span></div>
+      <div class="nu"><b>0</b><span>ข้อมูลที่ส่งออกไปภายนอก</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ ความสามารถ ============ -->
+<section id="what">
+  <div class="w">
+    <div class="shd">
+      <div class="kick">ความสามารถ</div>
+      <h2>ค้นได้ลึกกว่าการคลิกขวาบันทึกรูป</h2>
+      <p>อ่านทั้งภาพที่แสดงอยู่และภาพที่ถูกอ้างถึงในส่วนอื่นของหน้า
+        แล้วคืนที่อยู่ไฟล์เต็มพร้อมข้อมูลประกอบให้ตัดสินใจได้ทันที</p>
+    </div>
+
+    <div class="bento">
+      <div class="bx w3">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/>
+          <path d="M20 20l-4.2-4.2"/></svg></div>
+        <h3 class="big">ค้นครบทุกแหล่งในหน้าเดียว</h3>
+        <p>ไม่ใช่แค่ภาพที่มองเห็น แต่รวมถึงชุดภาพหลายความละเอียด ภาพที่ตั้งใจโหลดทีหลัง
+          ภาพพื้นหลัง ภาพปกสำหรับแชร์ และเนื้อหาสำรอง ซึ่งวิธีบันทึกแบบเดิมมักพลาด</p>
+      </div>
+      <div class="bx w3">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/>
+          <path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg></div>
+        <h3 class="big">สืบค้นไฟล์ต้นฉบับความคมชัดสูง</h3>
+        <p>เว็บส่วนใหญ่ย่อรูปก่อนแสดง ระบบจะลองสืบค้นไฟล์เต็มที่ซ่อนอยู่เบื้องหลัง
+          แล้วเทียบขนาดไฟล์จริงก่อนเสนอ จึงมั่นใจได้ว่าได้ภาพที่ใหญ่กว่าเดิมจริง</p>
+      </div>
+
+      <div class="bx w2">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/>
+          <path d="M5 15V6a1 1 0 011-1h9"/></svg></div>
+        <h3>คัดลอกทันที</h3>
+        <p>คัดลอกทีละรูปหรือเลือกหลายรูปพร้อมกัน ได้ที่อยู่เต็มที่นำไปวางใช้ได้เลย</p>
+      </div>
+      <div class="bx w2">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3.5v5.8c0 4.6-3.3 7.8-8 8.9-4.7-1.1-8-4.3-8-8.9V6.5z"/>
+          <path d="M9.2 12.2l2 2 3.6-3.8"/></svg></div>
+        <h3>คัดกรองก่อนบันทึก</h3>
+        <p>ตรวจไฟล์หลายชั้นก่อนบันทึกลงเครื่อง สิ่งที่ไม่น่าไว้ใจจะถูกกันไว้พร้อมคำอธิบาย</p>
+      </div>
+      <div class="bx w2">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/>
+          <path d="M12 7.5V12l3 1.8"/></svg></div>
+        <h3>ประวัติการค้นหา</h3>
+        <p>จดหน้าที่เคยค้นไว้ให้ กดกลับไปทำต่อได้ทันที และลบทิ้งเมื่อไรก็ได้</p>
+      </div>
+
+      <div class="bx w6">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+        <h3 class="big">จัดการผลลัพธ์ได้ดั่งใจ</h3>
+        <p>ค้นหาจากชื่อไฟล์ กรองตามนามสกุลหรือขนาดขั้นต่ำ เรียงจากใหญ่ไปเล็ก
+          สลับดูแบบรูปภาพหรือแบบตาราง คลิกดูขนาดเต็มก่อนตัดสินใจ
+          และเมื่อเลือกได้แล้วจะบันทึกทีละไฟล์หรือรวมเป็นชุดเดียวก็ได้
+          พร้อมตัดลิงก์ที่ใช้ไม่ได้ออกให้อัตโนมัติตั้งแต่ต้น</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ บทความแนวปฏิบัติด้านข้อมูล ============ -->
+<section id="policy">
+  <div class="w">
+    <div class="shd">
+      <div class="kick">เอกสารเผยแพร่</div>
+      <h2>แนวปฏิบัติด้านข้อมูลและการทำงานของระบบ</h2>
+      <p>ฉบับย่อสำหรับผู้ใช้งาน ระบุขอบเขตการทำงาน ข้อมูลที่จัดเก็บ และสิทธิ์ของผู้ใช้</p>
+    </div>
+
+    <article class="doc">
+      <div class="dochd">
+        <span class="tagx">เอกสารสำหรับผู้ใช้งาน</span>
+        <h3>ขอบเขตการทำงาน การจัดเก็บข้อมูล และมาตรการควบคุมการเข้าถึง</h3>
+        <p>เอกสารนี้อธิบายหลักการทำงานของระบบในระดับที่ผู้ใช้ควรทราบเพื่อประกอบการตัดสินใจ
+          โดยไม่ระบุรายละเอียดเชิงเทคนิคของการติดตั้งและการทำงานภายใน</p>
+      </div>
+
+      <div class="docbd">
+
+        <div class="cl">
+          <h4><u>ข้อ 1</u>ขอบเขตการทำงานของระบบ</h4>
+          <p>ระบบทั้งหมดติดตั้งและประมวลผลอยู่บนเครื่องคอมพิวเตอร์ของผู้ใช้เอง
+            มิได้เป็นบริการที่ให้บริการจากศูนย์ข้อมูลภายนอก และมิได้เชื่อมต่อกับ
+            ระบบประมวลผลของผู้ให้บริการรายใด</p>
+          <p>การเชื่อมต่อออกสู่เครือข่ายภายนอกเกิดขึ้นเฉพาะเมื่อผู้ใช้สั่งให้ค้นหาเว็บไซต์ปลายทาง
+            หรือสั่งบันทึกไฟล์ภาพเท่านั้น โดยเชื่อมต่อไปยังเว็บไซต์ที่ผู้ใช้ระบุโดยตรง
+            ไม่ผ่านตัวกลางใด และไม่มีการเชื่อมต่อไปยังบริการเก็บสถิติหรือวิเคราะห์พฤติกรรม</p>
+        </div>
+
+        <div class="cl">
+          <h4><u>ข้อ 2</u>ข้อมูลที่จัดเก็บและวัตถุประสงค์</h4>
+          <p>ระบบจัดเก็บข้อมูลเท่าที่จำเป็นต่อการให้บริการเท่านั้น ประกอบด้วย</p>
+          <ul>
+            <li>ข้อมูลบัญชีผู้ใช้ ได้แก่ ชื่อที่ใช้แสดง ที่อยู่อีเมล และรูปประจำตัวหากผู้ใช้เลือกอัปโหลด</li>
+            <li>ข้อมูลสำหรับตรวจสอบตัวตน ซึ่งจัดเก็บในรูปแบบที่ไม่สามารถแปลงกลับเป็นรหัสผ่านเดิมได้</li>
+            <li>ประวัติการค้นหา ได้แก่ ที่อยู่หน้าเว็บที่ผู้ใช้เคยค้น เพื่ออำนวยความสะดวกในการใช้งานต่อเนื่อง</li>
+            <li>ค่าตั้งค่าการใช้งานส่วนบุคคล ซึ่งไม่มีข้อมูลที่ระบุตัวบุคคลเพิ่มเติม</li>
+          </ul>
+          <p>ระบบ <b>ไม่จัดเก็บ</b> ไฟล์ภาพที่ผู้ใช้ค้นพบหรือดาวน์โหลด ไม่จัดเก็บเนื้อหาของเว็บไซต์
+            ปลายทาง และไม่จัดเก็บข้อมูลการใช้งานเพื่อวัตถุประสงค์ทางการตลาดหรือการโฆษณา</p>
+        </div>
+
+        <div class="cl">
+          <h4><u>ข้อ 3</u>สิทธิ์ของผู้ใช้เหนือข้อมูลของตน</h4>
+          <p>ผู้ใช้สามารถเข้าถึง แก้ไข และลบข้อมูลของตนได้ตลอดเวลาผ่านหน้าตั้งค่าบัญชี
+            การลบประวัติการค้นหาเป็นการลบออกจากที่จัดเก็บจริง มิใช่เพียงการซ่อนจากหน้าจอ</p>
+          <p>เนื่องจากข้อมูลทั้งหมดอยู่บนเครื่องของผู้ใช้ ผู้ใช้จึงมีสิทธิ์ขาดในการเข้าถึงและ
+            ทำลายข้อมูลของตนได้โดยสมบูรณ์ โดยไม่ต้องร้องขอต่อผู้ใดทั้งสิ้น</p>
+        </div>
+
+        <div class="cl">
+          <h4><u>ข้อ 4</u>มาตรการควบคุมการเข้าถึง</h4>
+          <p>การเข้าใช้งานต้องผ่านการยืนยันตัวตนทุกครั้ง และผู้ใช้สามารถเปิดใช้การยืนยัน
+            ตัวตนสองชั้นเพิ่มเติมได้ตามความสมัครใจ ซึ่งจะทำให้การเข้าถึงบัญชีต้องอาศัย
+            ทั้งสิ่งที่ผู้ใช้ทราบและสิ่งที่ผู้ใช้ครอบครอง</p>
+          <p>ระบบจำกัดจำนวนครั้งของการพยายามเข้าสู่ระบบที่ผิดพลาด และเปิดรับการเชื่อมต่อ
+            เฉพาะจากเครื่องที่ติดตั้งเท่านั้น ผู้ใช้เครื่องอื่นในเครือข่ายเดียวกันไม่สามารถเข้าถึงได้</p>
+        </div>
+
+        <div class="cl">
+          <h4><u>ข้อ 5</u>การตรวจสอบไฟล์ก่อนบันทึก</h4>
+          <p>ก่อนบันทึกไฟล์ภาพลงเครื่อง ระบบจะตรวจสอบความสอดคล้องของไฟล์หลายชั้น
+            เพื่อคัดกรองไฟล์ที่อ้างว่าเป็นภาพแต่มีลักษณะผิดปกติ ซึ่งเป็นรูปแบบที่พบได้ทั่วไป
+            ในการแพร่กระจายโปรแกรมไม่พึงประสงค์ผ่านไฟล์ภาพ</p>
+          <p>เมื่อพบความผิดปกติ ระบบจะระงับการบันทึกไว้ก่อนและแจ้งลักษณะของสิ่งที่ตรวจพบ
+            ให้ผู้ใช้ทราบ โดยผู้ใช้ยังคงเป็นผู้ตัดสินใจขั้นสุดท้าย</p>
+          <div class="note"><b>ข้อจำกัด</b> — การตรวจสอบนี้มิใช่โปรแกรมป้องกันไวรัส
+            และมิได้ทดแทนการใช้โปรแกรมป้องกันไวรัสตามปกติ ผู้ใช้ควรใช้ทั้งสองอย่างควบคู่กัน</div>
+        </div>
+
+        <div class="cl">
+          <h4><u>ข้อ 6</u>การไม่เปิดเผยรายละเอียดเชิงเทคนิค</h4>
+          <p>เอกสารฉบับนี้และหน้าเว็บทั้งหมดของระบบ จงใจไม่ระบุรายละเอียดเชิงเทคนิค
+            อันได้แก่ โครงสร้างภายในของระบบ ชื่อและตำแหน่งของไฟล์ข้อมูล ส่วนประกอบซอฟต์แวร์
+            และรุ่นที่ใช้งาน เงื่อนไขเฉพาะของกลไกตรวจสอบ ตลอดจนค่าตั้งค่าภายในต่าง ๆ</p>
+          <p>การเปิดเผยข้อมูลดังกล่าวต่อสาธารณะไม่ก่อประโยชน์ต่อผู้ใช้ทั่วไป
+            แต่กลับเป็นการลดต้นทุนให้แก่ผู้ประสงค์ร้ายในการค้นหาช่องทางโจมตี
+            การจำกัดข้อมูลส่วนนี้จึงถือเป็นมาตรการรักษาความปลอดภัยประการหนึ่ง
+            มิใช่การปิดบังข้อเท็จจริงจากผู้ใช้</p>
+          <p>ทั้งนี้ ผู้ใช้ที่ติดตั้งระบบไว้บนเครื่องของตนย่อมสามารถตรวจสอบการทำงานทั้งหมด
+            ได้ด้วยตนเองอยู่แล้ว โดยไม่จำเป็นต้องอาศัยการเปิดเผยผ่านช่องทางสาธารณะ</p>
+        </div>
+
+        <div class="cl">
+          <h4><u>ข้อ 7</u>ความรับผิดชอบของผู้ใช้</h4>
+          <p>ระบบทำหน้าที่ค้นหาและแสดงที่อยู่ของไฟล์ภาพเท่านั้น มิได้เป็นการอนุญาตให้ใช้
+            ภาพดังกล่าว ผู้ใช้มีหน้าที่ตรวจสอบเงื่อนไขลิขสิทธิ์และข้อกำหนดการใช้งานของ
+            เว็บไซต์ต้นทางก่อนนำภาพไปเผยแพร่หรือใช้เพื่อการค้าทุกครั้ง</p>
+        </div>
+
+      </div>
+
+      <div class="docft">
+        เอกสารนี้จัดทำขึ้นเพื่อความโปร่งใสต่อผู้ใช้งาน และอาจปรับปรุงได้เมื่อระบบมีการเปลี่ยนแปลง
+        เนื้อหาข้างต้นอธิบายหลักการในระดับนโยบาย มิได้มีสถานะเป็นเอกสารทางเทคนิค
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ ระดับการค้นหา ============ -->
+<section id="levels">
+  <div class="w">
+    <div class="shd">
+      <div class="kick">ระดับการค้นหา</div>
+      <h2>เลือกความลึกให้พอดีกับงาน</h2>
+      <p>ยิ่งลึกยิ่งครบ แต่ใช้เวลามากขึ้น ระดับปกติเพียงพอสำหรับเว็บส่วนใหญ่แล้ว</p>
+    </div>
+    <div class="lv">
+      <div class="lvc">
+        <h3>เร็ว</h3>
+        <p class="sm">เหมาะกับหน้าเว็บทั่วไปที่แสดงรูปครบอยู่แล้ว</p>
+        <ul>
+          <li><i></i>ภาพที่แสดงอยู่ในหน้า</li>
+          <li><i></i>ชุดภาพหลายความละเอียด</li>
+          <li><i></i>ภาพปกและไอคอนของหน้า</li>
+          <li class="off"><i></i>ภาพที่ถูกอ้างถึงในไฟล์ประกอบ</li>
+          <li class="off"><i></i>สืบค้นไฟล์ต้นฉบับ</li>
+        </ul>
+      </div>
+      <div class="lvc best">
+        <span class="rec">แนะนำ</span>
+        <h3>ปกติ</h3>
+        <p class="sm">สมดุลระหว่างความครบถ้วนกับความเร็ว ใช้ได้กับเว็บส่วนใหญ่</p>
+        <ul>
+          <li><i></i>ทุกอย่างในระดับเร็ว</li>
+          <li><i></i>ภาพที่ถูกอ้างถึงในไฟล์ประกอบของหน้า</li>
+          <li><i></i>ภาพที่ประกาศไว้ในข้อมูลโครงสร้าง</li>
+          <li><i></i>เนื้อหาสำรองและภาพเวกเตอร์</li>
+          <li class="off"><i></i>สืบค้นไฟล์ต้นฉบับ</li>
+        </ul>
+      </div>
+      <div class="lvc">
+        <h3>ละเอียดสูงสุด</h3>
+        <p class="sm">สำหรับเว็บที่ซ่อนรูปลึก หรือเมื่อต้องการภาพคมชัดที่สุด</p>
+        <ul>
+          <li><i></i>ทุกอย่างในระดับปกติ</li>
+          <li><i></i>เนื้อหาที่ฝังอยู่ภายในหน้า</li>
+          <li><i></i>ตามหน้าอื่นในเว็บไซต์เดียวกัน</li>
+          <li><i></i>ตรวจทุกลิงก์และตัดลิงก์เสียทิ้ง</li>
+          <li><i></i>สืบค้นไฟล์ต้นฉบับความคมชัดสูง</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ คำถาม ============ -->
+<section id="faq">
+  <div class="w">
+    <div class="shd">
+      <div class="kick">คำถามที่พบบ่อย</div>
+      <h2>ข้อสงสัยที่มักถามกันมา</h2>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary>ค้นแล้วไม่เจอรูปเลย เกิดจากอะไร</summary>
+        <div class="ans">ส่วนใหญ่เพราะหน้าเว็บสร้างรูปขึ้นมาหลังจากโหลดหน้าเสร็จแล้วทั้งหมด
+          ลองเปลี่ยนเป็นระดับละเอียดสูงสุดซึ่งจะค้นลึกกว่าเดิม อีกกรณีคือหน้านั้นต้องเข้าสู่ระบบ
+          ก่อนจึงจะเห็นเนื้อหา ซึ่งระบบเข้าถึงแทนคุณไม่ได้</div>
+      </details>
+      <details>
+        <summary>ข้อมูลการใช้งานของผมถูกส่งไปที่ไหนบ้าง</summary>
+        <div class="ans">ไม่ถูกส่งไปที่ใดทั้งสิ้น ระบบประมวลผลอยู่บนเครื่องคุณเอง
+          และเชื่อมต่อออกภายนอกเฉพาะไปยังเว็บไซต์ที่คุณสั่งให้ค้นหาเท่านั้น
+          ไม่มีการเก็บสถิติ ไม่มีการเรียกใช้บริการวิเคราะห์พฤติกรรม
+          รายละเอียดทั้งหมดอยู่ในเอกสารแนวปฏิบัติด้านข้อมูลด้านบน</div>
+      </details>
+      <details>
+        <summary>ระบบคัดกรองไฟล์ ใช้แทนโปรแกรมป้องกันไวรัสได้ไหม</summary>
+        <div class="ans">ไม่ได้ และไม่ได้ตั้งใจให้ใช้แทน ระบบตรวจความสอดคล้องของไฟล์
+          เพื่อคัดกรองไฟล์ที่อ้างว่าเป็นภาพแต่มีลักษณะผิดปกติ ซึ่งเป็นคนละกลไกกับการเทียบ
+          ฐานข้อมูลไวรัส จึงควรใช้ควบคู่กับโปรแกรมป้องกันไวรัสตามปกติเสมอ</div>
+      </details>
+      <details>
+        <summary>ไฟล์ต้นฉบับที่ระบบหาเจอ ต่างจากรูปในหน้าอย่างไร</summary>
+        <div class="ans">เว็บส่วนใหญ่ย่อรูปก่อนแสดงเพื่อให้โหลดเร็ว ระบบจะสืบค้นไฟล์เต็ม
+          ที่อยู่เบื้องหลังแล้วเทียบขนาดไฟล์จริงก่อนเสนอ จึงมักได้ภาพความละเอียดสูงกว่าเดิม
+          หลายเท่า รายการที่หาเจอเพิ่มจะมีป้ายกำกับไว้ให้เห็นชัด</div>
+      </details>
+      <details>
+        <summary>ทำไมบางรูปแสดงตัวอย่างไม่ได้ แต่ลิงก์ยังใช้ได้</summary>
+        <div class="ans">บางเว็บไม่อนุญาตให้เรียกไฟล์จากเว็บไซต์อื่น ทำให้แสดงตัวอย่างไม่ขึ้น
+          แต่ที่อยู่ที่ได้ยังเป็นลิงก์จริงที่เปิดตรงในเบราว์เซอร์หรือบันทึกได้ตามปกติ</div>
+      </details>
+      <details>
+        <summary>นำรูปที่ได้ไปใช้ได้เลยหรือไม่</summary>
+        <div class="ans">เครื่องมือนี้ช่วยหาที่อยู่ไฟล์เท่านั้น ไม่ได้ให้สิทธิ์ในตัวรูป
+          ควรตรวจเงื่อนไขลิขสิทธิ์ของเว็บไซต์ต้นทางก่อนนำไปเผยแพร่หรือใช้เชิงพาณิชย์ทุกครั้ง</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="w">
+    <div class="end">
+      <h2>เริ่มใช้งานได้เลย</h2>
+      <p>สมัครครั้งเดียว ใช้ได้ทันที ไม่ต้องยืนยันอีเมล ไม่มีค่าใช้จ่าย</p>
+      <div class="cta">
+        {% if user %}
+          <a class="b p lg" href="/app">เข้าใช้งานเครื่องมือ</a>
+        {% else %}
+          <a class="b p lg" href="/register">สมัครสมาชิก</a>
+          <a class="b lg" href="/login">เข้าสู่ระบบ</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="w ft">
+    <div>
+      <div class="br"><img src="/static/icon.png" alt=""><b class="grad">AUTO LINK PHOTO</b></div>
+      <p>เครื่องมือค้นหาและคัดลอกที่อยู่รูปภาพต้นฉบับ ทำงานบนเครื่องคุณเอง
+        ไม่มีการส่งข้อมูลออกไปยังบริการภายนอก</p>
+    </div>
+    <div>
+      <h4>เนื้อหา</h4>
+      <a href="#what">ความสามารถ</a>
+      <a href="#policy">แนวปฏิบัติด้านข้อมูล</a>
+      <a href="#levels">ระดับการค้นหา</a>
+      <a href="#faq">คำถามที่พบบ่อย</a>
+    </div>
+    <div>
+      <h4>เริ่มต้น</h4>
+      {% if user %}<a href="/app">เข้าใช้งานเครื่องมือ</a>
+      {% else %}<a href="/register">สมัครสมาชิก</a><a href="/login">เข้าสู่ระบบ</a>{% endif %}
+    </div>
+  </div>
+  <div class="w"><div class="ftend">
+    <span>ที่อยู่รูปภาพทั้งหมดเป็นลิงก์ต้นฉบับจากเว็บไซต์ปลายทางโดยตรง</span>
+    <span style="margin-left:auto">โปรดตรวจสอบเงื่อนไขลิขสิทธิ์ก่อนนำภาพไปใช้</span>
+  </div></div>
+</footer>
+
+<script src="/static/theme.js"></script>
+</body>
+</html>

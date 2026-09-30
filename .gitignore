@@ -1,0 +1,21 @@
+# ข้อมูลลับ / ข้อมูลจริงของผู้ใช้ — ห้ามขึ้น GitHub
+config.json
+users.json
+billing.json
+history.json
+panel_log.json
+content.json
+static/avatars/
+static/decoded/
+
+# ไฟล์สำรอง / กู้คืน
+_broken_backup/
+_restored/
+_salvage/
+_restore_report.txt
+กำลังกู้คืน.txt
+
+# อื่น ๆ
+__pycache__/
+*.pyc
+.claude/settings.local.json

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "auto-link-photo",
+      "runtimeExecutable": "C:\\Users\\Dutchy.DESKTOP-VSRM2UG\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "runtimeArgs": ["-X", "utf8", "app.py"],
+      "port": 5000
+    }
+  ]
+}

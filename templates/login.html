@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เข้าสู่ระบบ — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+{% include "_auth.css" %}
+  .rem{display:flex;align-items:center;gap:8px;margin:3px 0 14px;
+       font-size:12.5px;color:var(--ink-2);cursor:pointer;user-select:none;}
+  .rem input{accent-color:var(--dark);width:15px;height:15px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <section class="side">
+    <div class="side-in">
+      <img class="mark" src="/static/icon.png" alt="">
+      <h2>AUTO LINK <em>PHOTO</em></h2>
+      <p class="tag">ค้นหาและคัดลอกที่อยู่รูปภาพต้นฉบับจากหน้าเว็บใดก็ได้</p>
+      <ul>
+        <li><i></i>ค้นได้ถึงรูปที่ซ่อนอยู่ในไฟล์สไตล์ สคริปต์ และเฟรมย่อย</li>
+        <li><i></i>สืบค้นไฟล์ต้นฉบับที่คมชัดกว่าที่แสดงในหน้า</li>
+        <li><i></i>คัดลอกลิงก์ทีละรูป หลายรูปพร้อมกัน หรือบันทึกเป็น ZIP</li>
+      </ul>
+      <div class="base">ทำงานบนเครื่องของคุณเท่านั้น ไม่มีการส่งข้อมูลออกไปที่อื่น</div>
+    </div>
+  </section>
+
+  <section class="pane">
+    <h1>เข้าสู่ระบบ</h1>
+    <p class="sub">กรอกอีเมลและรหัสผ่านที่ใช้สมัครไว้</p>
+
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+    {% if info %}<div class="msg ok">{{ info }}</div>{% endif %}
+
+    <form method="post" action="{{ url_for('auth.do_login') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="fld">
+        <label class="f" for="email">อีเมล</label>
+        <input type="email" id="email" name="email" value="{{ email }}"
+               autocomplete="username" maxlength="254" autofocus>
+      </div>
+
+      <div class="fld">
+        <label class="f" for="password">รหัสผ่าน</label>
+        <input type="password" id="password" name="password"
+               autocomplete="current-password" maxlength="128">
+      </div>
+
+      <label class="rem"><input type="checkbox" name="remember" checked>
+        จดจำการเข้าสู่ระบบไว้</label>
+
+      <button class="go" type="submit">เข้าสู่ระบบ</button>
+    </form>
+
+    {% if allow_signup %}
+    <div class="foot">ยังไม่มีบัญชี? <a href="{{ url_for('auth.register') }}">สมัครสมาชิก</a></div>
+    {% endif %}
+  </section>
+
+</div>
+
+</body>
+</html>

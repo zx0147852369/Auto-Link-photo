@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ยืนยันตัวตน — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+{% include "_auth.css" %}
+  .code{width:100%;font-family:"Consolas","Courier New",monospace;font-size:27px;
+    font-weight:700;text-align:center;letter-spacing:.36em;text-indent:.36em;
+    color:var(--dark);border:1px solid var(--edge-2);border-radius:11px;
+    background:rgba(255,255,255,.94);padding:13px 10px;outline:none;
+    transition:border-color .12s, box-shadow .12s;}
+  .code:focus{border-color:rgba(28,86,184,.6);background:#fff;
+    box-shadow:0 0 0 3px rgba(28,86,184,.13);}
+  .mail{font-weight:600;color:var(--ink);word-break:break-all;}
+  .swap{margin-top:14px;padding-top:13px;border-top:1px solid var(--edge-2);
+    font-size:12px;color:var(--ink-3);line-height:1.65;}
+  .swap b{color:var(--ink-2);}
+  .tick{display:flex;align-items:center;gap:8px;justify-content:center;
+    margin-top:11px;font-size:11.5px;color:var(--ink-4);}
+  .tick i{width:7px;height:7px;border-radius:50%;background:#1a6b46;
+    animation:bl 2s ease-in-out infinite;}
+  @keyframes bl{0%,100%{opacity:1}50%{opacity:.25}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <section class="side">
+    <div class="side-in">
+      <img class="mark" src="/static/icon.png" alt="">
+      <h2>ยืนยัน<em>สองชั้น</em></h2>
+      <p class="tag">บัญชีนี้เปิดการยืนยันตัวตนสองชั้นไว้ จึงต้องกรอกรหัสจากแอปยืนยันตัวตนอีกครั้ง</p>
+      <ul>
+        <li><i></i>เปิดแอปยืนยันตัวตนที่คุณผูกไว้กับบัญชีนี้</li>
+        <li><i></i>หารายการ Auto Link Photo แล้วดูรหัส 6 หลัก</li>
+        <li><i></i>รหัสเปลี่ยนใหม่ทุก 30 วินาที</li>
+      </ul>
+      <div class="base">ถ้าเข้าถึงแอปไม่ได้ ใช้รหัสสำรองที่บันทึกไว้ตอนเปิดใช้งานแทนได้</div>
+    </div>
+  </section>
+
+  <section class="pane">
+    <h1>กรอกรหัสยืนยัน</h1>
+    <p class="sub">สำหรับบัญชี <span class="mail">{{ email }}</span></p>
+
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+
+    <form method="post" action="{{ url_for('auth.do_two_factor') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="fld">
+        <label class="f" for="code">รหัส 6 หลัก หรือรหัสสำรอง</label>
+        <input class="code" type="text" id="code" name="code" inputmode="numeric"
+               maxlength="20" autocomplete="one-time-code" autofocus required>
+      </div>
+      <button class="go" type="submit">ยืนยันและเข้าใช้งาน</button>
+    </form>
+
+    <div class="tick"><i></i><span id="tk">รหัสเปลี่ยนใหม่ทุก 30 วินาที</span></div>
+
+    <div class="swap">เข้าถึงแอปยืนยันตัวตนไม่ได้?
+      พิมพ์ <b>รหัสสำรอง</b> ลงในช่องเดียวกันนี้ได้เลย
+      {% if left %}(เหลืออยู่ {{ left }} ชุด){% endif %}</div>
+
+    <div class="foot"><a href="{{ url_for('auth.login') }}">กลับไปหน้าเข้าสู่ระบบ</a></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var el=document.getElementById("code");
+  el.addEventListener("input",function(){
+    var v=this.value;
+    if(/^[0-9\s]*$/.test(v)){
+      v=v.replace(/\D/g,"").slice(0,6);
+      if(this.value!==v) this.value=v;
+      if(v.length===6){ this.form.requestSubmit?this.form.requestSubmit():this.form.submit(); }
+    }else{
+      this.value=v.toUpperCase().slice(0,20);
+    }
+  });
+  var tk=document.getElementById("tk");
+  setInterval(function(){
+    var left=30-Math.floor(Date.now()/1000)%30;
+    tk.textContent="รหัสชุดนี้เหลืออีก "+left+" วินาที";
+  },1000);
+})();
+</script>
+</body>
+</html>

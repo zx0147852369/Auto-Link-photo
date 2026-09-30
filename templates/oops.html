@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ลองใหม่อีกครั้ง — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+  :root{--ink:#141a24;--ink-3:#78838f;--edge:rgba(255,255,255,.9);
+        --edge-2:rgba(120,135,155,.22);}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{color:var(--ink);
+    font-family:"Segoe UI","Sarabun","Noto Sans Thai",-apple-system,Tahoma,sans-serif;
+    font-size:14.5px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;padding:26px;min-height:100vh;
+    background:
+      radial-gradient(760px 520px at 12% -8%, rgba(196,220,248,.55), transparent 62%),
+      radial-gradient(680px 520px at 92% 8%, rgba(206,226,246,.5), transparent 60%),
+      linear-gradient(170deg,#f7fafd 0%,#eef2f8 52%,#e9eef5 100%);
+    background-attachment:fixed;}
+  .box{width:100%;max-width:400px;text-align:center;padding:38px 32px 30px;
+    background:rgba(255,255,255,.8);border:1px solid var(--edge);border-radius:18px;
+    box-shadow:0 2px 4px rgba(24,34,48,.05), 0 16px 46px rgba(24,34,48,.1);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .box{-webkit-backdrop-filter:blur(20px) saturate(175%);
+         backdrop-filter:blur(20px) saturate(175%);}
+  }
+  img{width:120px;margin:0 auto 18px;display:block;}
+  h1{margin:0 0 8px;font-size:18px;font-weight:700;letter-spacing:-.02em;}
+  p{margin:0 0 24px;font-size:13.5px;color:var(--ink-3);line-height:1.7;}
+  a{display:block;font:inherit;font-size:14px;font-weight:600;color:#fff;
+    text-decoration:none;border-radius:10px;padding:11px 14px;
+    background:linear-gradient(145deg,#1c78d0,#123a86);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16);transition:background .13s;}
+  a:hover{background:linear-gradient(145deg,#2489e4,#164699);}
+  a.alt{margin-top:9px;color:#48525f;background:rgba(255,255,255,.85);
+    border:1px solid var(--edge-2);box-shadow:none;}
+  a.alt:hover{background:#fff;color:var(--ink);}
+</style>
+</head>
+<body>
+  <div class="box">
+    <img src="/static/logo.png" alt="Auto Link Photo">
+    <h1>ลองใหม่อีกครั้ง</h1>
+    <p>{{ msg }}<br>กดปุ่มด้านล่างเพื่อกลับไปเริ่มใหม่ได้เลย</p>
+    <a href="{{ url_for('auth.login') }}">ไปหน้าเข้าสู่ระบบ</a>
+    <a class="alt" href="/">กลับหน้าแรก</a>
+  </div>
+</body>
+</html>

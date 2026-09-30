@@ -1,0 +1,6 @@
+Flask>=3.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+Pillow>=10.0.0
+# qrcode ไม่ต้องใช้แล้ว ระบบสร้างรหัส QR เองในไฟล์ qr.py
+cryptography>=41.0.0   # ใช้ถอดรหัสสตรีมวิดีโอแบบ AES-128 ตามมาตรฐาน HLS

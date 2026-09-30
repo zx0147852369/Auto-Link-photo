@@ -1,0 +1,304 @@
+/* ==================================================================
+   panel.css — หน้าจัดการระบบสำหรับผู้ดูแล
+   โทนทางการ เน้นอ่านง่าย ข้อมูลแน่น ไม่มีลูกเล่นที่ไม่จำเป็น
+   ================================================================== */
+
+:root{
+  --ink:#101620;
+  --ink-2:#414c5b;
+  --ink-3:#5f6a78;
+  --ink-4:#68737f;
+  --line:#e3e8ef;
+  --line-2:#eff2f6;
+  --paper:#f5f7fa;
+  --card:#ffffff;
+  --navy:#123a86;
+  --navy-2:#1c6fd0;
+  --sel:#eaf1fb;
+  --ok:#166a45;
+  --ok-bg:#e7f4ed;
+  --warn:#8a5a11;
+  --warn-bg:#fbf2e2;
+  --red:#a83232;
+  --red-bg:#fbecec;
+  --side-w:246px;
+  --r:11px;
+}
+
+html[data-theme="dark"]{
+  --ink:#e9eff7;
+  --ink-2:#c2cddb;
+  --ink-3:#9aa8bb;
+  --ink-4:#8f9dae;
+  --line:rgba(255,255,255,.13);
+  --line-2:rgba(255,255,255,.08);
+  --paper:#0b1119;
+  --card:#131c27;
+  --navy:#cfe0f7;
+  --navy-2:#6aa8fc;
+  --sel:rgba(106,168,252,.16);
+  --ok:#7fd4a8; --ok-bg:rgba(127,212,168,.13);
+  --warn:#e6b862; --warn-bg:rgba(230,184,98,.13);
+  --red:#ff9083; --red-bg:rgba(255,144,131,.13);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Segoe UI","Sarabun","Noto Sans Thai",system-ui,-apple-system,sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--navy-2);text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+.skip{position:absolute;left:-999px;top:0;z-index:99;background:var(--card);
+  padding:10px 16px;border-radius:0 0 8px 0;}
+.skip:focus{left:0;}
+
+.wrap{display:flex;min-height:100%;}
+
+/* ---------------- เมนูซ้าย ---------------- */
+.side{
+  width:var(--side-w);flex:none;background:var(--card);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;height:100dvh;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 16px;
+  border-bottom:1px solid var(--line-2);}
+.brand img{width:30px;height:30px;object-fit:contain;flex:none;}
+.brand span{display:flex;flex-direction:column;line-height:1.2;min-width:0;}
+.brand b{font-size:14px;font-weight:700;letter-spacing:-.015em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.brand i{font-style:normal;font-size:11px;color:var(--ink-4);letter-spacing:.05em;}
+
+.nav{padding:12px 10px;display:flex;flex-direction:column;gap:2px;
+  overflow-y:auto;flex:1;}
+.mi{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;
+  font:inherit;font-size:13.5px;color:var(--ink-2);background:none;border:none;
+  cursor:pointer;text-align:left;width:100%;transition:background .13s,color .13s;}
+.mi:hover{background:var(--line-2);color:var(--ink);text-decoration:none;}
+.mi.on{background:var(--sel);color:var(--navy);font-weight:700;}
+.mi svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.mi span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mi.sm{font-size:12.5px;padding:8px 11px;color:var(--ink-3);}
+.mi.dz{color:var(--red);}
+.sfoot{padding:10px;border-top:1px solid var(--line-2);
+  display:flex;flex-direction:column;gap:2px;}
+
+.scrim{position:fixed;inset:0;background:rgba(10,16,24,.42);z-index:40;}
+
+/* ---------------- ส่วนเนื้อหา ---------------- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.top{display:flex;align-items:center;gap:14px;padding:0 26px;height:62px;
+  background:var(--card);border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:20;}
+.top h1{margin:0;font-size:16.5px;font-weight:700;letter-spacing:-.02em;flex:1;
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.burger{display:none;width:34px;height:34px;border-radius:8px;flex:none;
+  border:1px solid var(--line);background:none;cursor:pointer;padding:0;
+  position:relative;}
+.burger span,.burger span::before,.burger span::after{
+  position:absolute;left:50%;width:15px;height:1.7px;background:var(--ink-2);
+  border-radius:2px;transform:translateX(-50%);}
+.burger span{top:16px;}
+.burger span::before{content:"";top:-5px;left:0;transform:none;}
+.burger span::after{content:"";top:5px;left:0;transform:none;}
+
+.who{display:flex;align-items:center;gap:9px;flex:none;}
+.who .av{width:32px;height:32px;border-radius:50%;flex:none;display:grid;
+  place-items:center;font-size:13px;font-weight:700;color:#fff;
+  background:linear-gradient(140deg,#2183e2,#123a86);}
+.who .tx{display:flex;flex-direction:column;line-height:1.25;}
+.who b{font-size:12.5px;font-weight:700;}
+.who i{font-style:normal;font-size:11px;color:var(--ink-4);}
+
+main{padding:24px 26px 60px;max-width:1320px;width:100%;}
+
+/* ---------------- ข้อความแจ้งผล ---------------- */
+.flash{padding:11px 15px;border-radius:9px;font-size:13.5px;margin:0 0 18px;
+  border:1px solid transparent;}
+.flash.good{background:var(--ok-bg);color:var(--ok);border-color:rgba(22,106,69,.22);}
+.flash.bad{background:var(--red-bg);color:var(--red);border-color:rgba(168,50,50,.22);}
+
+/* ---------------- การ์ดและหัวข้อ ---------------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  margin-bottom:18px;overflow:hidden;}
+.card > h2{margin:0;padding:14px 18px;font-size:14px;font-weight:700;
+  letter-spacing:-.015em;border-bottom:1px solid var(--line-2);
+  display:flex;align-items:center;gap:10px;}
+.card > h2 .cnt{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink-4);}
+.card > .in{padding:18px;}
+.card > .in.tight{padding:12px 18px;}
+.hint{font-size:12.5px;color:var(--ink-3);line-height:1.7;margin:0 0 14px;}
+.hint:last-child{margin-bottom:0;}
+
+/* ---------------- ตัวเลขสรุป ---------------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:12px;margin-bottom:18px;}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:15px 17px;}
+.kpi .lb{font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:7px;}
+.kpi .lb svg{width:14px;height:14px;fill:none;stroke:var(--navy-2);
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.kpi .vl{font-size:25px;font-weight:800;letter-spacing:-.035em;margin-top:5px;
+  font-variant-numeric:tabular-nums;line-height:1.15;}
+.kpi .sub{font-size:11.5px;color:var(--ink-4);margin-top:2px;}
+
+/* ---------------- ตาราง ---------------- */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);
+  vertical-align:middle;}
+th{font-size:11.5px;font-weight:700;color:var(--ink-3);letter-spacing:.02em;
+  background:var(--line-2);white-space:nowrap;position:sticky;top:0;}
+tbody tr:hover{background:var(--line-2);}
+tbody tr:last-child td{border-bottom:none;}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+td.mono{font-family:"Consolas","Courier New",monospace;font-size:12px;}
+.empty{padding:36px 18px;text-align:center;color:var(--ink-4);font-size:13px;}
+
+.who2{display:flex;align-items:center;gap:9px;min-width:0;}
+.who2 .av{width:28px;height:28px;border-radius:50%;flex:none;display:grid;
+  place-items:center;font-size:12px;font-weight:700;color:#fff;
+  background:linear-gradient(140deg,#5b9bea,#123a86);overflow:hidden;}
+.who2 .av img{width:100%;height:100%;object-fit:cover;}
+.who2 .t{min-width:0;line-height:1.3;}
+.who2 .t b{display:block;font-size:13px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.who2 .t i{font-style:normal;display:block;font-size:11.5px;color:var(--ink-4);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ---------------- ป้าย ---------------- */
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;
+  font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;
+  background:var(--line-2);color:var(--ink-3);}
+.tag.b{background:var(--sel);color:var(--navy);}
+.tag.g{background:var(--ok-bg);color:var(--ok);}
+.tag.y{background:var(--warn-bg);color:var(--warn);}
+.tag.r{background:var(--red-bg);color:var(--red);}
+
+/* ---------------- แบบฟอร์ม ---------------- */
+.fld{margin-bottom:14px;}
+.fld:last-child{margin-bottom:0;}
+.fld label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);
+  margin-bottom:5px;}
+input[type=text],input[type=email],input[type=password],input[type=number],
+input[type=url],select,textarea{
+  width:100%;font:inherit;font-size:13.5px;color:var(--ink);
+  background:var(--card);border:1px solid var(--line);border-radius:9px;
+  padding:9px 12px;transition:border-color .13s, box-shadow .13s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy-2);
+  box-shadow:0 0 0 3px var(--sel);}
+textarea{resize:vertical;min-height:78px;line-height:1.65;}
+input[type=file]{font-size:12.5px;}
+.tip{font-size:11.5px;color:var(--ink-4);margin-top:5px;line-height:1.6;}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 18px;}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0 16px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.row .fld{flex:1;min-width:150px;margin-bottom:0;}
+
+.chk{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--ink-2);
+  cursor:pointer;margin-bottom:11px;line-height:1.55;}
+.chk input{width:16px;height:16px;flex:none;margin-top:2px;accent-color:var(--navy-2);}
+.chk b{font-weight:600;color:var(--ink);}
+.chk span{display:block;font-size:11.5px;color:var(--ink-4);}
+
+/* ---------------- ปุ่ม ---------------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+  padding:9px 16px;border-radius:9px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-2);transition:border-color .13s,background .13s;}
+.btn:hover{border-color:var(--navy-2);color:var(--navy);text-decoration:none;}
+.btn.p{background:linear-gradient(140deg,#2183e2,#123a86);color:#fff;
+  border-color:transparent;}
+.btn.p:hover{filter:brightness(1.07);color:#fff;}
+.btn.dz{color:var(--red);border-color:rgba(168,50,50,.3);}
+.btn.dz:hover{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.btn.sm{font-size:12px;padding:6px 11px;border-radius:7px;}
+.btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.acts.tight{margin-top:0;}
+.inline{display:inline;}
+
+/* ---------------- แถบค้นหาและตัวกรอง ---------------- */
+.bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.bar input[type=text]{max-width:280px;}
+.pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:20px;
+  border:1px solid var(--line);color:var(--ink-3);background:var(--card);}
+.pill:hover{border-color:var(--navy-2);color:var(--navy);text-decoration:none;}
+.pill.on{background:var(--sel);border-color:transparent;color:var(--navy);}
+
+/* ---------------- แถบสัดส่วน ---------------- */
+.bar2{height:6px;border-radius:6px;background:var(--line-2);overflow:hidden;
+  min-width:70px;}
+.bar2 i{display:block;height:100%;border-radius:6px;
+  background:linear-gradient(90deg,#2183e2,#0fbcf0);}
+.bar2 i.low{background:linear-gradient(90deg,#d79a34,#e6b862);}
+.bar2 i.out{background:linear-gradient(90deg,#b83a3a,#d96a6a);}
+
+/* ---------------- ภาพแบนเนอร์ ---------------- */
+.slides{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:16px;}
+.slide{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
+  background:var(--card);display:flex;flex-direction:column;}
+.slide .pic{aspect-ratio:1/1;background:#f0f3f7;position:relative;}
+.slide .pic img{width:100%;height:100%;object-fit:cover;display:block;}
+.slide.off .pic img{filter:grayscale(1);opacity:.45;}
+.slide .no{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:12.5px;color:var(--ink-4);text-align:center;padding:16px;}
+.slide .ord{position:absolute;top:8px;left:8px;font-size:11px;font-weight:700;
+  color:#fff;background:rgba(16,22,32,.72);border-radius:20px;padding:2px 9px;}
+.slide .st{position:absolute;top:8px;right:8px;}
+.slide .bd{padding:12px 13px;display:flex;flex-direction:column;gap:9px;flex:1;}
+.slide .bd input{font-size:12.5px;padding:7px 10px;}
+.slide .btns{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;}
+.slide .btns .btn{font-size:11.5px;padding:5px 9px;border-radius:7px;}
+
+/* ---------------- รหัสที่เพิ่งสร้าง ---------------- */
+.codes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:8px;margin:12px 0;}
+.codes code{font-family:"Consolas","Courier New",monospace;font-size:13px;
+  font-weight:700;letter-spacing:.05em;background:var(--sel);color:var(--navy);
+  border-radius:8px;padding:9px 11px;text-align:center;user-select:all;}
+
+/* ---------------- รายการประวัติ ---------------- */
+.log{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2);
+  font-size:13px;align-items:flex-start;}
+.log:last-child{border-bottom:none;}
+.log .tm{flex:none;width:118px;font-size:11.5px;color:var(--ink-4);
+  font-variant-numeric:tabular-nums;}
+.log .ct{flex:1;min-width:0;}
+.log .ct b{font-weight:600;}
+.log .ct i{font-style:normal;color:var(--ink-3);}
+.log .ct u{text-decoration:none;display:block;font-size:11.5px;color:var(--ink-4);}
+
+/* ---------------- จอเล็ก ---------------- */
+@media (max-width:900px){
+  .side{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);
+    transition:transform .22s ease;box-shadow:0 0 40px rgba(10,20,35,.2);}
+  .side.show{transform:none;}
+  .burger{display:block;}
+  main{padding:18px 16px 50px;}
+  .top{padding:0 16px;}
+  .who .tx{display:none;}
+}
+@media (max-width:600px){
+  .kpis{grid-template-columns:1fr 1fr;gap:9px;}
+  .kpi{padding:12px 13px;}
+  .kpi .vl{font-size:21px;}
+  th,td{padding:9px 11px;}
+  .slides{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:420px){
+  .slides{grid-template-columns:1fr;}
+}
+@media print{
+  .side,.top,.acts,.bar{display:none;}
+  body{background:#fff;}
+}

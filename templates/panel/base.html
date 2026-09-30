@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="csrf" content="{{ csrf_token() }}">
+<title>{% block title %}จัดการระบบ{% endblock %} · {{ C.site_name }}</title>
+<link rel="icon" href="/static/favicon.ico">
+<script>(function(){try{var t=localStorage.getItem("alp-theme");var d=t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();</script>
+<link rel="stylesheet" href="/static/panel.css">
+</head>
+<body>
+
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<div class="wrap">
+
+  <!-- ================= เมนูด้านซ้าย ================= -->
+  <aside class="side" id="side">
+    <div class="brand">
+      <img src="/static/icon.png" alt="">
+      <span><b>{{ C.site_name }}</b><i>จัดการระบบ</i></span>
+    </div>
+
+    <nav class="nav" aria-label="เมนูจัดการระบบ">
+      {% for ep, label, path in menu %}
+      <a class="mi{{ ' on' if here == ep or (here and here.startswith(ep)) else '' }}"
+         href="{{ url_for(ep) }}"{{ ' aria-current=page'|safe if here == ep else '' }}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ path }}"/></svg>
+        <span>{{ label }}</span>
+      </a>
+      {% endfor %}
+    </nav>
+
+    <div class="sfoot">
+      <a class="mi sm" href="/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h5.5V10M19.5 4.5L11 13"/>
+          <path d="M17 14v5.5h-13V6.5H10"/></svg>
+        <span>เปิดหน้าเว็บจริง</span></a>
+      <a class="mi sm" href="/app">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h9"/></svg>
+        <span>ไปหน้าเครื่องมือ</span></a>
+      <button class="mi sm" type="button" data-theme-toggle>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></svg>
+        <span>สลับโหมดแสดงผล</span></button>
+      <a class="mi sm dz" href="{{ url_for('auth.logout') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5.5H6.5v13H14"/>
+          <path d="M11 12h9M17 9l3 3-3 3"/></svg>
+        <span>ออกจากระบบ</span></a>
+    </div>
+  </aside>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- ================= เนื้อหา ================= -->
+  <div class="main">
+    <header class="top">
+      <button class="burger" id="burger" type="button"
+              aria-label="เปิดเมนู" aria-expanded="false"><span></span></button>
+      <h1>{% block heading %}จัดการระบบ{% endblock %}</h1>
+      <div class="who">
+        <span class="av">{{ (admin_name or 'A')[:1]|upper }}</span>
+        <span class="tx">
+          <b>{{ admin_name }}</b>
+          <i>{{ admin_email or 'บัญชีผู้ดูแลระบบ' }}</i>
+        </span>
+      </div>
+    </header>
+
+    <main id="main">
+      {% with ok = request.args.get('ok'), err = request.args.get('err') %}
+        {% if ok %}<div class="flash good" role="status">{{ ok }}</div>{% endif %}
+        {% if err %}<div class="flash bad" role="alert">{{ err }}</div>{% endif %}
+      {% endwith %}
+
+      {% block body %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="/static/theme.js"></script>
+<script>
+(function(){
+  var b = document.getElementById("burger"),
+      side = document.getElementById("side"),
+      scrim = document.getElementById("scrim");
+  if (!b) return;
+  function open(on){
+    side.classList.toggle("show", on);
+    scrim.hidden = !on;
+    b.setAttribute("aria-expanded", on ? "true" : "false");
+    document.body.style.overflow = on ? "hidden" : "";
+  }
+  b.onclick = function(){ open(!side.classList.contains("show")); };
+  scrim.onclick = function(){ open(false); };
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") open(false);
+  });
+
+  /* ยืนยันก่อนทำสิ่งที่ย้อนกลับไม่ได้ */
+  document.querySelectorAll("form[data-confirm]").forEach(function(f){
+    f.addEventListener("submit", function(e){
+      if (!confirm(f.dataset.confirm)) e.preventDefault();
+    });
+  });
+
+  /* ค้นหาในตารางแบบทันที ไม่ต้องรอโหลดหน้าใหม่ */
+  var q = document.getElementById("filter");
+  if (q) {
+    q.addEventListener("input", function(){
+      var v = q.value.trim().toLowerCase();
+      document.querySelectorAll("[data-row]").forEach(function(tr){
+        tr.hidden = v && tr.dataset.row.indexOf(v) === -1;
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

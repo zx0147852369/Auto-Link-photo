@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ยืนยันอีเมล — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+{% include "_auth.css" %}
+  .code{width:100%;font-family:"Consolas","Courier New",monospace;font-size:29px;
+    font-weight:700;text-align:center;letter-spacing:.42em;text-indent:.42em;
+    color:#123a86;border:1px solid var(--edge-2);border-radius:11px;
+    background:rgba(255,255,255,.92);padding:13px 10px;outline:none;
+    transition:border-color .12s, box-shadow .12s;}
+  .code:focus{border-color:rgba(28,86,184,.6);background:#fff;
+    box-shadow:0 0 0 3px rgba(28,86,184,.13);}
+  .show{font-family:"Consolas","Courier New",monospace;font-size:22px;font-weight:700;
+        letter-spacing:.3em;color:#8a5a11;display:block;margin-top:6px;}
+  .mail{font-weight:600;color:var(--ink);word-break:break-all;}
+  .timer{font-size:11.5px;color:var(--ink-4);text-align:center;margin-top:11px;}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <img class="logo" src="/static/logo.png" alt="Auto Link Photo">
+  <h1>ยืนยันอีเมล</h1>
+  <p class="sub">กรอกรหัส 6 หลักที่ส่งไปยัง<br><span class="mail">{{ email }}</span></p>
+
+  {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+  {% if note and not show %}<div class="msg ok">{{ note }}</div>{% endif %}
+  {% if show %}
+    <div class="msg warn">
+      ยังไม่ได้ตั้งค่าการส่งอีเมล จึงแสดงรหัสไว้ที่นี่แทน
+      <span class="show">{{ show }}</span>
+      เปิดไฟล์ <b>คู่มือตั้งค่า-อีเมล.md</b> เพื่อเปิดใช้การส่งอีเมลจริง
+    </div>
+  {% elif note == '' and not error %}{% endif %}
+
+  <form method="post" action="{{ url_for('auth.do_verify') }}">
+    <div class="fld">
+      <label class="f" for="code">รหัสยืนยัน</label>
+      <input class="code" type="text" id="code" name="code" inputmode="numeric"
+             maxlength="6" pattern="[0-9]*" autocomplete="one-time-code" autofocus required>
+    </div>
+    <button class="go" type="submit">ยืนยันและเข้าใช้งาน</button>
+  </form>
+
+  <form method="post" action="{{ url_for('auth.resend') }}">
+    <button class="ghost" type="submit">ส่งรหัสใหม่อีกครั้ง</button>
+  </form>
+
+  <div class="timer" id="timer">รหัสมีอายุ {{ minutes }} นาที</div>
+
+  <div class="foot"><a href="{{ url_for('auth.register') }}">แก้ไขข้อมูลการสมัคร</a></div>
+</div>
+
+<script>
+(function(){
+  var el=document.getElementById("code");
+  el.addEventListener("input",function(){
+    var v=this.value.replace(/\D/g,"").slice(0,6);
+    if(this.value!==v) this.value=v;
+    if(v.length===6) this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit();
+  });
+  el.addEventListener("paste",function(e){
+    var t=(e.clipboardData||window.clipboardData).getData("text")||"";
+    var v=t.replace(/\D/g,"").slice(0,6);
+    if(v){ e.preventDefault(); this.value=v;
+      this.dispatchEvent(new Event("input",{bubbles:true})); }
+  });
+
+  var left={{ minutes }}*60, box=document.getElementById("timer");
+  var t=setInterval(function(){
+    left--;
+    if(left<=0){ clearInterval(t); box.textContent="รหัสหมดอายุแล้ว กรุณากดส่งรหัสใหม่"; return; }
+    var m=Math.floor(left/60), s=left%60;
+    box.textContent="รหัสหมดอายุใน "+m+":"+(s<10?"0":"")+s+" นาที";
+  },1000);
+})();
+</script>
+</body>
+</html>

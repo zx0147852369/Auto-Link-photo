@@ -1,0 +1,116 @@
+{% extends "panel/base.html" %}
+{% block title %}ภาพรวม{% endblock %}
+{% block heading %}ภาพรวมระบบ{% endblock %}
+{% block body %}
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="lb"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/>
+      <path d="M4.5 20a7.5 7.5 0 0115 0"/></svg>บัญชีทั้งหมด</div>
+    <div class="vl">{{ "{:,}".format(us.total) }}</div>
+    <div class="sub">สมัครใหม่สัปดาห์นี้ {{ us.new_week }} · วันนี้ {{ us.new_today }}</div>
+  </div>
+  <div class="kpi">
+    <div class="lb"><svg viewBox="0 0 24 24"><path d="M3.5 6h17v12h-17zM3.5 10.5h17"/></svg>บัญชีที่ซื้อแพ็กเกจ</div>
+    <div class="vl">{{ "{:,}".format(paid_users) }}</div>
+    <div class="sub">จากทั้งหมด {{ "{:,}".format(us.total) }} บัญชี</div>
+  </div>
+  <div class="kpi">
+    <div class="lb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/>
+      <path d="M12 8.2v7.6M9.4 10.4h5.2M9.4 13.6h5.2"/></svg>Token คงเหลือรวม</div>
+    <div class="vl">{{ "{:,}".format(total_tokens) }}</div>
+    <div class="sub">ใช้ไปแล้วรวม {{ "{:,}".format(total_used) }}</div>
+  </div>
+  <div class="kpi">
+    <div class="lb"><svg viewBox="0 0 24 24"><path d="M12 3.5v17M8 7.5h6.5a2.5 2.5 0 010 5H9a2.5 2.5 0 000 5h7"/></svg>รายได้ที่ยืนยันแล้ว</div>
+    <div class="vl">{{ "{:,}".format(income_all) }}</div>
+    <div class="sub">30 วันล่าสุด {{ "{:,}".format(income_month) }} บาท</div>
+  </div>
+</div>
+
+{% if orders_pending or us.suspended or not gateway_ready %}
+<div class="card">
+  <h2>เรื่องที่ควรดู</h2>
+  <div class="in tight">
+    {% if orders_pending %}
+    <div class="log"><div class="tm"><span class="tag y">รอดำเนินการ</span></div>
+      <div class="ct"><b>มีคำสั่งซื้อรอยืนยันการชำระเงิน {{ orders_pending }} รายการ</b>
+        <u>เมื่อได้รับเงินแล้ว กดยืนยันเพื่อเติม Token ให้ลูกค้าอัตโนมัติ</u></div>
+      <a class="btn sm" href="{{ url_for('panel.money', status='pending') }}">ไปจัดการ</a></div>
+    {% endif %}
+    {% if us.suspended %}
+    <div class="log"><div class="tm"><span class="tag r">ถูกระงับ</span></div>
+      <div class="ct"><b>มีบัญชีที่ถูกระงับการใช้งาน {{ us.suspended }} บัญชี</b>
+        <u>ตรวจดูได้ว่าควรคืนสิทธิ์หรือไม่</u></div>
+      <a class="btn sm" href="{{ url_for('panel.people', only='suspended') }}">ดูรายชื่อ</a></div>
+    {% endif %}
+    {% if not gateway_ready %}
+    <div class="log"><div class="tm"><span class="tag">ยังไม่ตั้งค่า</span></div>
+      <div class="ct"><b>ยังไม่ได้เปิดใช้ระบบรับชำระเงินอัตโนมัติ</b>
+        <u>ระหว่างนี้รับเงินเองแล้วออกรหัสเติม Token หรือยืนยันคำสั่งซื้อด้วยมือได้</u></div>
+      <a class="btn sm" href="{{ url_for('panel.settings') }}">ตั้งค่า</a></div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="grid2">
+  <div class="card">
+    <h2>คำสั่งซื้อล่าสุด<span class="cnt"><a href="{{ url_for('panel.money') }}">ดูทั้งหมด</a></span></h2>
+    {% if recent_orders %}
+    <div class="tw"><table>
+      <thead><tr><th>บัญชี</th><th>แพ็กเกจ</th><th class="num">ราคา</th><th>สถานะ</th></tr></thead>
+      <tbody>
+      {% for o in recent_orders %}
+        <tr>
+          <td><span class="who2"><span class="t"><b>{{ o.user }}</b></span></span></td>
+          <td>{{ o.plan_name }}</td>
+          <td class="num">{{ "{:,}".format(o.amount) }}</td>
+          <td>{% if o.status == 'paid' %}<span class="tag g">ชำระแล้ว</span>
+              {% elif o.status == 'pending' %}<span class="tag y">รอชำระ</span>
+              {% else %}<span class="tag">ยกเลิก</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody></table></div>
+    {% else %}<div class="empty">ยังไม่มีคำสั่งซื้อ</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <h2>บัญชีที่สมัครล่าสุด<span class="cnt"><a href="{{ url_for('panel.people') }}">ดูทั้งหมด</a></span></h2>
+    {% if recent_users %}
+    <div class="tw"><table>
+      <thead><tr><th>บัญชี</th><th>สมัครเมื่อ</th><th>สถานะ</th></tr></thead>
+      <tbody>
+      {% for u in recent_users %}
+        <tr>
+          <td><a href="{{ url_for('panel.person', email=u.email) }}"><span class="who2">
+            <span class="av">{{ (u.name or 'U')[:1]|upper }}</span>
+            <span class="t"><b>{{ u.name }}</b><i>{{ u.email }}</i></span></span></a></td>
+          <td>{{ u.created|datefmt }}</td>
+          <td>{% if u.suspended %}<span class="tag r">ระงับ</span>
+              {% elif u.totp_enabled %}<span class="tag g">มี 2 ชั้น</span>
+              {% else %}<span class="tag">ปกติ</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody></table></div>
+    {% else %}<div class="empty">ยังไม่มีบัญชีผู้ใช้</div>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>บันทึกการทำงานล่าสุด<span class="cnt"><a href="{{ url_for('panel.logs') }}">ดูทั้งหมด</a></span></h2>
+  <div class="in tight">
+    {% if recent_log %}
+      {% for r in recent_log %}
+      <div class="log">
+        <div class="tm">{{ r.at|timefmt }}</div>
+        <div class="ct"><b>{{ r.action }}</b>
+          {% if r.target %}<i> · {{ r.target }}</i>{% endif %}
+          <u>{{ r.who }}{% if r.detail %} · {{ r.detail }}{% endif %}</u></div>
+      </div>
+      {% endfor %}
+    {% else %}<div class="empty">ยังไม่มีบันทึก</div>{% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตั้งค่าบัญชี — Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<style>
+  :root{
+    --ink:#141a24; --ink-2:#48525f; --ink-3:#78838f; --ink-4:#a3acb7;
+    --dark:#123a86; --sel:#e7eefa; --edge:rgba(255,255,255,.9);
+    --edge-2:rgba(120,135,155,.22); --red:#b3392c; --ok:#1a6b46; --warn:#8a5a11;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{margin:0;padding:0;}
+  body{color:var(--ink);min-height:100vh;
+    font-family:"Segoe UI","Sarabun","Noto Sans Thai",-apple-system,Tahoma,sans-serif;
+    font-size:14.5px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(760px 520px at 12% -8%, rgba(196,220,248,.55), transparent 62%),
+      radial-gradient(680px 520px at 92% 8%, rgba(206,226,246,.5), transparent 60%),
+      linear-gradient(170deg,#f7fafd 0%,#eef2f8 52%,#e9eef5 100%);
+    background-attachment:fixed;}
+  ::selection{background:#cfdff5;}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(247,250,253,.84);
+    border-bottom:1px solid var(--edge-2);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    header{background:rgba(247,250,253,.66);
+      -webkit-backdrop-filter:blur(16px) saturate(170%);
+      backdrop-filter:blur(16px) saturate(170%);}
+  }
+  .head{padding:0 20px 0 18px;display:flex;align-items:center;gap:11px;height:56px;}
+  .home{display:flex;align-items:center;gap:11px;text-decoration:none;}
+  .home img{width:36px;height:36px;object-fit:contain;}
+  .htitle{font-size:16px;font-weight:800;letter-spacing:-.02em;
+    background:linear-gradient(96deg,#0fbcf0,#14379e);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .htitle span{font-weight:600;}
+  .head .r{margin-left:auto;display:flex;gap:8px;}
+  .head a.b{font-size:12.5px;font-weight:600;color:var(--ink-2);text-decoration:none;
+    border:1px solid var(--edge-2);border-radius:8px;padding:5px 12px;
+    background:rgba(255,255,255,.82);}
+  .head a.b:hover{background:#fff;color:var(--ink);border-color:rgba(28,86,184,.4);}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 20px 80px;
+    display:grid;grid-template-columns:206px minmax(0,1fr);gap:20px;align-items:start;}
+
+  .nav{position:sticky;top:70px;display:flex;flex-direction:column;gap:2px;}
+  .nav a{font-size:13.5px;font-weight:600;color:var(--ink-2);text-decoration:none;
+    padding:9px 12px;border-radius:9px;border-left:2px solid transparent;}
+  .nav a:hover{background:rgba(255,255,255,.7);color:var(--ink);}
+  .nav a.on{background:var(--sel);color:var(--dark);border-left-color:var(--dark);}
+  .nav .hd{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-4);padding:0 12px 8px;}
+
+  .card{background:rgba(255,255,255,.78);border:1px solid var(--edge);
+    border-radius:15px;padding:22px 22px 20px;margin-bottom:16px;
+    box-shadow:0 1px 2px rgba(24,34,48,.04), 0 8px 26px rgba(24,34,48,.05);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    .card{-webkit-backdrop-filter:blur(18px) saturate(170%);
+          backdrop-filter:blur(18px) saturate(170%);}
+  }
+  .card h2{margin:0 0 4px;font-size:16px;font-weight:700;letter-spacing:-.02em;}
+  .card .cd{margin:0 0 18px;font-size:12.5px;color:var(--ink-3);line-height:1.65;}
+
+  label.f{display:block;font-size:11.5px;font-weight:600;color:var(--ink-3);margin-bottom:6px;}
+  .fld{margin-bottom:13px;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  input[type=text],input[type=email],input[type=password]{
+    width:100%;font:inherit;font-size:13.5px;color:var(--ink);
+    border:1px solid var(--edge-2);border-radius:9px;background:rgba(255,255,255,.92);
+    padding:9px 11px;outline:none;transition:border-color .12s, box-shadow .12s;}
+  input:focus{border-color:rgba(28,86,184,.6);background:#fff;
+    box-shadow:0 0 0 3px rgba(28,86,184,.13);}
+  input[type=file]{font-size:12.5px;color:var(--ink-2);}
+  .hint{font-size:11px;color:var(--ink-4);margin-top:5px;line-height:1.55;}
+
+  button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;
+    border:1px solid var(--edge-2);background:rgba(255,255,255,.86);color:var(--ink-2);
+    padding:8px 16px;transition:.13s;}
+  button:hover{background:#fff;color:var(--ink);border-color:rgba(28,86,184,.4);}
+  button.p{color:#fff;border-color:transparent;
+    background:linear-gradient(145deg,#1c78d0,#123a86);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16);}
+  button.p:hover{color:#fff;background:linear-gradient(145deg,#2489e4,#164699);}
+  button.d{color:var(--red);border-color:rgba(179,57,44,.3);}
+  button.d:hover{background:rgba(253,242,240,.9);color:var(--red);border-color:rgba(179,57,44,.45);}
+  .acts{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+
+  /* รูปโปรไฟล์ */
+  .avrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
+  .av{width:78px;height:78px;border-radius:50%;object-fit:cover;flex:none;
+    border:1px solid var(--edge-2);background:#fff;}
+  .av.txt{display:flex;align-items:center;justify-content:center;font-size:29px;
+    font-weight:700;color:#fff;border-color:transparent;
+    background:linear-gradient(145deg,#1f7fd6,#12379b);}
+  .avin{flex:1;min-width:210px;}
+
+  .msg{padding:11px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;line-height:1.6;}
+  .msg.ok{color:var(--ok);background:rgba(237,248,242,.92);border:1px solid rgba(26,107,70,.22);}
+  .msg.err{color:var(--red);background:rgba(253,242,240,.92);border:1px solid rgba(179,57,44,.24);}
+
+  /* สถานะสองชั้น */
+  .st{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:11px;
+    margin-bottom:16px;font-size:13px;}
+  .st.on{background:rgba(237,248,242,.9);border:1px solid rgba(26,107,70,.22);color:var(--ok);}
+  .st.off{background:rgba(255,250,240,.95);border:1px solid rgba(190,140,30,.26);color:var(--warn);}
+  .st b{font-weight:700;}
+  .st i{width:9px;height:9px;border-radius:50%;flex:none;background:currentColor;}
+  .st .rt{margin-left:auto;font-size:11.5px;opacity:.8;}
+
+  .setup{border:1px solid var(--edge-2);border-radius:12px;padding:18px;
+    background:rgba(248,250,253,.85);margin-bottom:16px;}
+  .setup .step{display:flex;gap:12px;margin-bottom:16px;}
+  .setup .step:last-of-type{margin-bottom:0;}
+  .setup .k{width:21px;height:21px;border-radius:6px;flex:none;font-size:11px;
+    font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;
+    background:linear-gradient(145deg,#1f7fd6,#12379b);}
+  .setup .sb{flex:1;min-width:0;}
+  .setup .sb b{display:block;font-size:13px;font-weight:700;margin-bottom:4px;}
+  .setup .sb p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.65;}
+  .qrbox{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-top:11px;}
+  .qr{background:#fff;border:1px solid var(--edge-2);border-radius:10px;padding:9px;
+    line-height:0;flex:none;}
+  .qr svg{display:block;width:186px;height:186px;}
+  .keybox{flex:1;min-width:220px;}
+  .key{font-family:"Consolas","Courier New",monospace;font-size:14px;font-weight:700;
+    color:var(--dark);background:#fff;border:1px solid var(--edge-2);border-radius:9px;
+    padding:11px 13px;word-break:break-all;letter-spacing:.06em;line-height:1.8;
+    user-select:all;cursor:text;}
+  .codein{width:100%;font-family:"Consolas",monospace;font-size:21px;font-weight:700;
+    text-align:center;letter-spacing:.3em;text-indent:.3em;color:var(--dark);
+    border:1px solid var(--edge-2);border-radius:10px;background:#fff;padding:10px;
+    outline:none;}
+  .codein:focus{border-color:rgba(28,86,184,.6);box-shadow:0 0 0 3px rgba(28,86,184,.13);}
+
+  /* รหัสสำรอง */
+  .bkwrap{border:1px solid rgba(190,140,30,.3);background:rgba(255,251,243,.95);
+    border-radius:12px;padding:18px;margin-bottom:16px;}
+  .bkwrap h3{margin:0 0 5px;font-size:14px;font-weight:700;color:var(--warn);}
+  .bkwrap p{margin:0 0 14px;font-size:12.5px;color:var(--ink-2);line-height:1.65;}
+  .bk{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;
+    margin-bottom:14px;}
+  .bk span{font-family:"Consolas",monospace;font-size:13.5px;font-weight:700;
+    background:#fff;border:1px solid rgba(190,140,30,.25);border-radius:7px;
+    padding:7px 4px;text-align:center;letter-spacing:.04em;user-select:all;}
+
+  .apps{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;}
+  .apps span{font-size:11px;color:var(--ink-3);background:rgba(255,255,255,.9);
+    border:1px solid var(--edge-2);border-radius:20px;padding:2px 10px;}
+
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;
+    padding-top:16px;margin-top:4px;border-top:1px solid var(--edge-2);}
+  .meta div span{display:block;font-size:11px;color:var(--ink-4);}
+  .meta div b{font-size:13px;font-weight:600;}
+
+  @media(max-width:820px){
+    .wrap{grid-template-columns:1fr;padding:18px 14px 60px;}
+    .nav{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px;}
+    .nav .hd{display:none;}
+    .nav a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;}
+    .nav a.on{border-left:none;border-bottom-color:var(--dark);}
+    .two{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head">
+    <a class="home" href="/app">
+      <img src="/static/icon.png" alt="">
+      <span class="htitle">AUTO LINK <span>PHOTO</span></span>
+    </a>
+    <div class="r">
+      <a class="b" href="/app">กลับไปเครื่องมือ</a>
+      <a class="b" href="{{ url_for('auth.logout') }}">ออกจากระบบ</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="nav">
+    <div class="hd">ตั้งค่าบัญชี</div>
+    <a href="#profile" class="on">โปรไฟล์</a>
+    <a href="#email">อีเมล</a>
+    <a href="#password">รหัสผ่าน</a>
+    <a href="#twofa">ยืนยันสองชั้น</a>
+  </nav>
+
+  <main>
+    {% if ok %}<div class="msg ok">{{ ok }}</div>{% endif %}
+    {% if err %}<div class="msg err">{{ err }}</div>{% endif %}
+
+    {% if is_admin %}
+      <div class="card">
+        <h2>บัญชีผู้ดูแล</h2>
+        <p class="cd">คุณเข้าใช้งานด้วยรหัสผ่านผู้ดูแลซึ่งไม่ผูกกับอีเมล
+          จึงไม่มีข้อมูลโปรไฟล์ให้แก้ไข หากต้องการใช้ส่วนนี้
+          กรุณาสมัครบัญชีผู้ใช้แล้วเข้าสู่ระบบด้วยบัญชีนั้น</p>
+        <div class="acts"><a class="b" href="/register"><button class="p">สมัครบัญชีผู้ใช้</button></a></div>
+      </div>
+    {% else %}
+
+    <!-- ============ โปรไฟล์ ============ -->
+    <section class="card" id="profile">
+      <h2>โปรไฟล์</h2>
+      <p class="cd">ชื่อและรูปที่จะแสดงในระบบ</p>
+
+      <div class="avrow">
+        {% if u.picture %}
+          <img class="av" src="/static/avatars/{{ u.picture }}" alt="">
+        {% else %}
+          <span class="av txt">{{ (u.name or 'U')[:1]|upper }}</span>
+        {% endif %}
+        <div class="avin">
+          <form method="post" action="{{ url_for('account.set_picture') }}"
+                enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="fld">
+              <label class="f" for="pic">เปลี่ยนรูปโปรไฟล์</label>
+              <input type="file" id="pic" name="picture" accept="image/*" required>
+              <div class="hint">ไฟล์ไม่เกิน 5 MB · ระบบจะครอบเป็นสี่เหลี่ยมจัตุรัสและวาดไฟล์ใหม่
+                ซึ่งตัดข้อมูลแฝงที่อาจซ่อนมาในไฟล์ออกทั้งหมด</div>
+            </div>
+            <div class="acts">
+              <button class="p" type="submit">อัปโหลดรูป</button>
+            </div>
+          </form>
+          {% if u.picture %}
+          <form method="post" action="{{ url_for('account.remove_picture') }}"
+                style="margin-top:9px">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="d" type="submit">ลบรูปโปรไฟล์</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ url_for('account.set_name') }}" style="margin-top:20px">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="fld">
+          <label class="f" for="name">ชื่อที่แสดง</label>
+          <input type="text" id="name" name="name" maxlength="60"
+                 value="{{ u.name or '' }}" required>
+        </div>
+        <div class="acts"><button class="p" type="submit">บันทึกชื่อ</button></div>
+      </form>
+
+      <div class="meta">
+        <div><span>สมัครเมื่อ</span><b>{{ u.created|datefmt }}</b></div>
+        <div><span>เข้าใช้ล่าสุด</span><b>{{ u.last_login|datefmt }}</b></div>
+        <div><span>วิธีเข้าสู่ระบบ</span><b>{{ 'Google' if u.via == 'google' else 'อีเมลและรหัสผ่าน' }}</b></div>
+      </div>
+    </section>
+
+    <!-- ============ อีเมล ============ -->
+    <section class="card" id="email">
+      <h2>อีเมล</h2>
+      <p class="cd">อีเมลนี้ใช้เข้าสู่ระบบ การเปลี่ยนต้องยืนยันด้วยรหัสผ่านปัจจุบัน
+        และประวัติการค้นหาจะถูกย้ายตามไปด้วย</p>
+      <form method="post" action="{{ url_for('account.set_email') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="two">
+          <div class="fld">
+            <label class="f" for="em">อีเมลใหม่</label>
+            <input type="email" id="em" name="email" maxlength="254"
+                   value="{{ u.email or '' }}" required>
+          </div>
+          <div class="fld">
+            <label class="f" for="empw">รหัสผ่านปัจจุบัน</label>
+            <input type="password" id="empw" name="password"
+                   autocomplete="current-password" maxlength="128" required>
+          </div>
+        </div>
+        <div class="acts"><button class="p" type="submit">เปลี่ยนอีเมล</button></div>
+      </form>
+    </section>
+
+    <!-- ============ รหัสผ่าน ============ -->
+    <section class="card" id="password">
+      <h2>รหัสผ่าน</h2>
+      <p class="cd">ต้องยาวอย่างน้อย {{ min_password }} ตัวอักษร
+        และมีทั้งพิมพ์ใหญ่กับพิมพ์เล็กผสมกัน</p>
+      <form method="post" action="{{ url_for('account.set_pwd') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="fld">
+          <label class="f" for="cur">รหัสผ่านปัจจุบัน</label>
+          <input type="password" id="cur" name="current"
+                 autocomplete="current-password" maxlength="128" required>
+        </div>
+        <div class="two">
+          <div class="fld">
+            <label class="f" for="np">รหัสผ่านใหม่</label>
+            <input type="password" id="np" name="new"
+                   autocomplete="new-password" maxlength="128" required>
+          </div>
+          <div class="fld">
+            <label class="f" for="np2">ยืนยันรหัสผ่านใหม่</label>
+            <input type="password" id="np2" name="new2"
+                   autocomplete="new-password" maxlength="128" required>
+          </div>
+        </div>
+        <div class="acts"><button class="p" type="submit">เปลี่ยนรหัสผ่าน</button></div>
+      </form>
+    </section>
+
+    <!-- ============ ยืนยันสองชั้น ============ -->
+    <section class="card" id="twofa">
+      <h2>การยืนยันตัวตนสองชั้น</h2>
+      <p class="cd">เพิ่มด่านที่สองตอนเข้าสู่ระบบ แม้รหัสผ่านหลุด คนอื่นก็ยังเข้าบัญชีไม่ได้
+        ถ้าไม่มีรหัสจากแอปยืนยันตัวตนในมือคุณ</p>
+
+      {% if totp_on %}
+        <div class="st on"><i></i><b>เปิดใช้งานอยู่</b>
+          <span class="rt">รหัสสำรองเหลือ {{ backup_left }} ชุด</span></div>
+      {% else %}
+        <div class="st off"><i></i><b>ยังไม่ได้เปิดใช้งาน</b>
+          <span class="rt">แนะนำให้เปิดเพื่อความปลอดภัย</span></div>
+      {% endif %}
+
+      {% if codes %}
+      <div class="bkwrap">
+        <h3>รหัสสำรอง — เห็นได้ครั้งเดียวเท่านั้น</h3>
+        <p>บันทึกหรือพิมพ์เก็บไว้ในที่ปลอดภัยทันที ใช้แทนรหัสจากแอปได้ชุดละหนึ่งครั้ง
+          เมื่อคุณเข้าถึงแอปยืนยันตัวตนไม่ได้ ปิดหน้านี้แล้วจะดูซ้ำไม่ได้อีก</p>
+        <div class="bk">
+          {% for c in codes %}<span>{{ c }}</span>{% endfor %}
+        </div>
+        <div class="acts">
+          <button type="button" id="cpBk">คัดลอกรหัสทั้งหมด</button>
+          <button type="button" onclick="window.print()">พิมพ์หน้านี้</button>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if setup %}
+      <div class="setup">
+        <div class="step">
+          <span class="k">1</span>
+          <div class="sb"><b>ติดตั้งแอปยืนยันตัวตน</b>
+            <p>ใช้แอปตัวไหนก็ได้ที่รองรับมาตรฐาน TOTP</p>
+            <div class="apps">
+              <span>Google Authenticator</span><span>Microsoft Authenticator</span>
+              <span>Authy</span><span>1Password</span><span>Bitwarden</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="k">2</span>
+          <div class="sb"><b>เพิ่มบัญชีเข้าแอป</b>
+            <p>สแกนรหัส QR หรือถ้าสแกนไม่ได้ ให้เลือกเพิ่มด้วยกุญแจแล้วพิมพ์ตามด้านขวา</p>
+            <div class="qrbox">
+              {% if setup.qr %}
+                <div class="qr">{{ setup.qr|safe }}</div>
+              {% endif %}
+              <div class="keybox">
+                <label class="f">กุญแจสำหรับกรอกเอง</label>
+                <div class="key">{{ setup.pretty }}</div>
+                <div class="hint">ชนิด: ตามเวลา (TOTP) · 6 หลัก · เปลี่ยนทุก 30 วินาที
+                  {% if not setup.qr %}<br>เครื่องนี้ยังไม่มีไลบรารีสร้างรหัส QR
+                  จึงแสดงเฉพาะกุญแจให้พิมพ์เอง{% endif %}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="k">3</span>
+          <div class="sb"><b>ยืนยันด้วยรหัสจากแอป</b>
+            <p>กรอกรหัส 6 หลักที่แอปแสดงอยู่ตอนนี้ เพื่อยืนยันว่าผูกสำเร็จ</p>
+            <form method="post" action="{{ url_for('account.totp_enable') }}"
+                  style="margin-top:11px;max-width:260px">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <input class="codein" type="text" name="code" inputmode="numeric"
+                     maxlength="6" autocomplete="one-time-code" autofocus required
+                     id="setupCode">
+              <div class="acts" style="margin-top:11px">
+                <button class="p" type="submit">ยืนยันและเปิดใช้งาน</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if not totp_on and not setup %}
+        <form method="post" action="{{ url_for('account.totp_start') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <div class="acts"><button class="p" type="submit">เริ่มตั้งค่าการยืนยันสองชั้น</button></div>
+        </form>
+      {% endif %}
+
+      {% if totp_on %}
+        <div class="two">
+          <form method="post" action="{{ url_for('account.totp_backup') }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="fld">
+              <label class="f" for="bkpw">สร้างรหัสสำรองชุดใหม่</label>
+              <input type="password" id="bkpw" name="password" placeholder="รหัสผ่านปัจจุบัน"
+                     autocomplete="current-password" maxlength="128" required>
+              <div class="hint">รหัสชุดเก่าจะใช้ไม่ได้ทันที</div>
+            </div>
+            <div class="acts"><button type="submit">สร้างชุดใหม่</button></div>
+          </form>
+
+          <form method="post" action="{{ url_for('account.totp_disable') }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="fld">
+              <label class="f" for="offpw">ปิดการยืนยันสองชั้น</label>
+              <input type="password" id="offpw" name="password" placeholder="รหัสผ่านปัจจุบัน"
+                     autocomplete="current-password" maxlength="128" required>
+              <div class="hint">บัญชีจะเหลือการป้องกันเพียงรหัสผ่านชั้นเดียว</div>
+            </div>
+            <div class="acts"><button class="d" type="submit">ปิดการใช้งาน</button></div>
+          </form>
+        </div>
+      {% endif %}
+    </section>
+
+    {% endif %}
+  </main>
+</div>
+
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll(".nav a"));
+  var secs=links.map(function(a){ return document.querySelector(a.getAttribute("href")); });
+  function mark(){
+    var y=window.scrollY+90, best=0;
+    secs.forEach(function(s,i){ if(s && s.offsetTop<=y) best=i; });
+    links.forEach(function(a,i){ a.classList.toggle("on", i===best); });
+  }
+  if(secs[0]){ window.addEventListener("scroll",mark,{passive:true}); mark(); }
+
+  var focus="{{ focus }}";
+  if(focus){ var el=document.getElementById(focus);
+    if(el) el.scrollIntoView({block:"start"}); }
+
+  var sc=document.getElementById("setupCode");
+  if(sc) sc.addEventListener("input",function(){
+    var v=this.value.replace(/\D/g,"").slice(0,6);
+    if(this.value!==v) this.value=v;
+  });
+
+  var cp=document.getElementById("cpBk");
+  if(cp) cp.onclick=function(){
+    var t=[].map.call(document.querySelectorAll(".bk span"),function(s){
+      return s.textContent.trim(); }).join("\n");
+    if(navigator.clipboard) navigator.clipboard.writeText(t);
+    cp.textContent="คัดลอกแล้ว";
+    setTimeout(function(){ cp.textContent="คัดลอกรหัสทั้งหมด"; },1800);
+  };
+})();
+</script>
+</body>
+</html>

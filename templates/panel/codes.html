@@ -1,0 +1,80 @@
+{% extends "panel/base.html" %}
+{% block title %}รหัสเติม Token{% endblock %}
+{% block heading %}รหัสเติม Token{% endblock %}
+{% block body %}
+
+<div class="kpis">
+  <div class="kpi"><div class="lb">รหัสที่ออกไปแล้ว</div>
+    <div class="vl">{{ "{:,}".format(stats.total or 0) }}</div></div>
+  <div class="kpi"><div class="lb">ใช้ไปแล้ว</div>
+    <div class="vl">{{ "{:,}".format(stats.used or 0) }}</div></div>
+  <div class="kpi"><div class="lb">ยังไม่ถูกใช้</div>
+    <div class="vl">{{ "{:,}".format(stats.left or 0) }}</div></div>
+  <div class="kpi"><div class="lb">Token ที่ยังไม่ถูกเรียกใช้</div>
+    <div class="vl">{{ "{:,}".format(stats.tokens_left or 0) }}</div></div>
+</div>
+
+{% if fresh %}
+<div class="card" style="border-color:var(--navy-2)">
+  <h2>รหัสที่เพิ่งออก {{ fresh.list|length }} ใบ · ใบละ {{ "{:,}".format(fresh.tokens) }} Token</h2>
+  <div class="in">
+    <p class="hint"><b>คัดลอกเก็บไว้เดี๋ยวนี้</b> ระบบแสดงรหัสเต็มให้เห็นเพียงครั้งเดียว
+      เพราะไฟล์ข้อมูลเก็บไว้เฉพาะค่าที่ผ่านการแปลงแบบทางเดียว ย้อนกลับมาอ่านไม่ได้
+      หากรีเฟรชหน้านี้ รหัสจะหายไปจากหน้าจอ</p>
+    <div class="codes">
+      {% for c in fresh.list %}<code>{{ c }}</code>{% endfor %}
+    </div>
+    <div class="acts">
+      <button class="btn p" type="button" id="copyall">คัดลอกทั้งหมด</button>
+      <span class="tip" id="copied" style="align-self:center"></span>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById("copyall").onclick = function(){
+  var t = [].map.call(document.querySelectorAll(".codes code"),
+                      function(e){ return e.textContent; }).join("\n");
+  navigator.clipboard.writeText(t).then(function(){
+    document.getElementById("copied").textContent = "คัดลอกแล้ว";
+  }, function(){
+    document.getElementById("copied").textContent = "คัดลอกไม่สำเร็จ กรุณาเลือกและคัดลอกเอง";
+  });
+};
+</script>
+{% endif %}
+
+<div class="card">
+  <h2>ออกรหัสเติม Token ชุดใหม่</h2>
+  <div class="in">
+    <p class="hint">ใช้เมื่อรับเงินผ่านช่องทางที่ระบบไม่ได้เชื่อมต่อไว้
+      คุณออกรหัสแล้วส่งให้ลูกค้าไปกรอกเองที่เมนูแพ็กเกจในบัญชีของเขา
+      รหัสหนึ่งใบใช้ได้ครั้งเดียวเท่านั้น</p>
+    <form method="post" action="{{ url_for('panel.codes_make') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="row">
+        <div class="fld"><label for="tk">Token ต่อหนึ่งรหัส</label>
+          <input type="text" id="tk" name="tokens" required placeholder="เช่น 250000"></div>
+        <div class="fld"><label for="ct">จำนวนรหัสที่ต้องการ</label>
+          <input type="text" id="ct" name="count" value="1" required></div>
+        <div class="fld"><label for="nt">บันทึกกำกับ</label>
+          <input type="text" id="nt" name="note" maxlength="120"
+                 placeholder="เช่น ขายผ่านไลน์ รอบเดือนกรกฎาคม"></div>
+        <button class="btn p" type="submit">ออกรหัส</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h2>เรื่องที่ควรรู้</h2>
+  <div class="in">
+    <p class="hint">ระบบไม่เก็บตัวรหัสจริงไว้ในไฟล์ เก็บเพียงค่าที่ผ่านการแปลงแบบทางเดียว
+      ผลคือแม้มีคนเข้าถึงไฟล์ข้อมูลได้ ก็นำรหัสไปใช้ต่อไม่ได้
+      แต่ก็แปลว่าผู้ดูแลเองก็เรียกดูรหัสเดิมย้อนหลังไม่ได้เช่นกัน
+      หากทำรหัสหาย ให้ออกใบใหม่แทน</p>
+    <p class="hint">การกรอกรหัสมีการจำกัดจำนวนครั้งต่อช่วงเวลา
+      จึงไม่สามารถสุ่มเดารหัสจำนวนมากได้</p>
+  </div>
+</div>
+
+{% endblock %}

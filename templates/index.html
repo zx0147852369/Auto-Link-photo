@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Link Photo</title>
+<link rel="icon" href="/static/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/static/icon.png">
+<style>
+  :root{
+    --ink:#141a24;
+    --ink-2:#48525f;
+    --ink-3:#78838f;
+    --ink-4:#a3acb7;
+    --dark:#123a86;
+    --dark-2:#1c56b8;
+    --sel:#e7eefa;
+    --sel-b:rgba(24,70,160,.32);
+    --pane:rgba(255,255,255,.74);
+    --pane-2:rgba(255,255,255,.86);
+    --edge:rgba(255,255,255,.9);
+    --edge-2:rgba(120,135,155,.22);
+    --r:15px;
+    --r-s:10px;
+    --red:#b3392c;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{margin:0;padding:0;}
+  body{
+    color:var(--ink);min-height:100vh;
+    font-family:"Segoe UI","Sarabun","Noto Sans Thai",-apple-system,BlinkMacSystemFont,Tahoma,sans-serif;
+    font-size:14.5px;line-height:1.6;-webkit-font-smoothing:antialiased;
+    text-rendering:optimizeSpeed;
+    background:
+      radial-gradient(760px 520px at 12% -8%, rgba(196,220,248,.55), transparent 62%),
+      radial-gradient(680px 520px at 92% 8%, rgba(206,226,246,.5), transparent 60%),
+      radial-gradient(900px 640px at 46% 108%, rgba(210,224,242,.48), transparent 62%),
+      linear-gradient(170deg,#f7fafd 0%,#eef2f8 52%,#e9eef5 100%);
+    background-attachment:fixed;
+  }
+  ::selection{background:#cfdff5;}
+
+  /* พาเนลกระจก — ไม่มี backdrop-filter จึงไม่กินแรงตอนเลื่อน */
+  .glass{background:var(--pane);border:1px solid var(--edge);border-radius:var(--r);
+         box-shadow:0 1px 2px rgba(24,34,48,.04), 0 8px 26px rgba(24,34,48,.055);}
+
+  /* ================= header ================= */
+  header{position:sticky;top:0;z-index:50;background:rgba(247,250,253,.84);
+         border-bottom:1px solid var(--edge-2);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    header{background:rgba(247,250,253,.66);
+           -webkit-backdrop-filter:blur(16px) saturate(170%);
+           backdrop-filter:blur(16px) saturate(170%);}
+  }
+  .head{max-width:1420px;margin:0 auto;padding:0 26px;
+        display:flex;align-items:center;gap:12px;height:64px;}
+  .mark{width:38px;height:38px;flex:none;display:block;object-fit:contain;}
+  .brand{display:flex;flex-direction:column;line-height:1.15;}
+  .htitle{font-size:16px;font-weight:800;letter-spacing:-.02em;
+          background:linear-gradient(96deg,#0fbcf0,#14379e);
+          -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .htitle span{font-weight:600;}
+
+  .me{margin-left:auto;display:flex;align-items:center;gap:9px;}
+  .me-av{width:27px;height:27px;border-radius:50%;object-fit:cover;flex:none;
+         border:1px solid var(--edge-2);background:#fff;}
+  .me-av.txt{display:flex;align-items:center;justify-content:center;
+    font-size:11.5px;font-weight:700;color:#fff;border-color:transparent;
+    background:linear-gradient(145deg,#1f7fd6,#12379b);}
+  .me-nm{font-size:12.5px;font-weight:600;line-height:1.2;max-width:190px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .me-em{font-size:10.5px;color:var(--ink-4);line-height:1.2;max-width:190px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .me a{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-2);
+    text-decoration:none;border:1px solid var(--edge-2);border-radius:8px;
+    padding:5px 11px;background:rgba(255,255,255,.82);margin-left:4px;
+    transition:background .12s, color .12s, border-color .12s;}
+  .me a:hover{background:#fff;color:var(--ink);border-color:rgba(28,86,184,.4);}
+  @media(max-width:640px){ .me-nm,.me-em{display:none;} }
+
+  .me{margin-left:auto;display:flex;align-items:center;gap:9px;}
+  .me-av{width:27px;height:27px;border-radius:50%;object-fit:cover;flex:none;
+         border:1px solid var(--edge-2);background:#fff;}
+  .me-av.txt{display:flex;align-items:center;justify-content:center;
+    font-size:11.5px;font-weight:700;color:#fff;border-color:transparent;
+    background:linear-gradient(145deg,#1f7fd6,#12379b);}
+  .me-nm{font-size:12.5px;font-weight:600;line-height:1.2;max-width:190px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .me-em{font-size:10.5px;color:var(--ink-4);line-height:1.2;max-width:190px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .me a{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-2);
+    text-decoration:none;border:1px solid var(--edge-2);border-radius:8px;
+    padding:5px 11px;background:rgba(255,255,255,.82);margin-left:4px;
+    transition:background .12s, color .12s, border-color .12s;}
+  .me a:hover{background:#fff;color:var(--ink);border-color:rgba(28,86,184,.4);}
+  @media(max-width:640px){ .me-nm,.me-em{display:none;} }
+  .hcap{font-size:10.5px;font-weight:600;letter-spacing:.32em;color:var(--ink-4);
+        text-transform:uppercase;}
+  .hsub{font-size:12.5px;color:var(--ink-3);margin-left:auto;}
+
+  /* ================= layout ================= */
+  .shell{max-width:1420px;margin:0 auto;padding:24px 26px 80px;
+         display:grid;grid-template-columns:308px minmax(0,1fr);gap:20px;align-items:start;}
+
+  aside{position:sticky;top:78px;display:flex;flex-direction:column;gap:13px;
+        max-height:calc(100vh - 96px);overflow-y:auto;overscroll-behavior:contain;
+        padding-right:4px;scrollbar-width:thin;}
+  aside::-webkit-scrollbar{width:7px;}
+  aside::-webkit-scrollbar-thumb{background:rgba(120,135,155,.3);border-radius:8px;}
+  aside::-webkit-scrollbar-track{background:transparent;}
+
+  .sec{padding:15px 16px 16px;}
+  .sec[hidden]{display:none;}
+  .sechd{display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .no{width:21px;height:21px;border-radius:7px;flex:none;font-size:11.5px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;color:#fff;
+      background:linear-gradient(145deg,#39414c,#1d2229);}
+  .sectt{font-size:13px;font-weight:700;letter-spacing:-.005em;}
+
+  input[type=text]{width:100%;font:inherit;font-size:14px;color:var(--ink);
+    border:1px solid var(--edge-2);border-radius:var(--r-s);
+    background:rgba(255,255,255,.8);padding:11px 13px;outline:none;
+    transition:border-color .12s, box-shadow .12s;}
+  input[type=text]::placeholder{color:var(--ink-4);}
+  input[type=text]:focus{border-color:rgba(45,55,70,.55);background:#fff;
+    box-shadow:0 0 0 3px rgba(45,55,70,.1);}
+
+  button{font:inherit;font-weight:600;cursor:pointer;border-radius:var(--r-s);
+    border:1px solid var(--edge-2);background:rgba(255,255,255,.8);
+    color:var(--ink-2);padding:10px 16px;white-space:nowrap;
+    transition:background .12s, color .12s, border-color .12s;}
+  button:hover:not(:disabled){background:#fff;color:var(--ink);border-color:rgba(120,135,155,.42);}
+  button:active:not(:disabled){background:var(--sel);}
+  button:disabled{opacity:.5;cursor:not-allowed;}
+  button.go{width:100%;margin-top:9px;padding:12px 16px;color:#fff;border-color:transparent;
+    background:linear-gradient(145deg,#333b46,#1c2128);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16);}
+  button.go:hover:not(:disabled){color:#fff;background:linear-gradient(145deg,#3d4753,#242a32);}
+  button.wide{width:100%;margin-top:7px;font-size:13.5px;}
+  button.sm{padding:8px 13px;font-size:13px;font-weight:500;border-radius:9px;}
+
+  .depth{display:flex;flex-direction:column;gap:8px;}
+  .depth label{border:1px solid var(--edge-2);border-radius:var(--r-s);
+    background:rgba(255,255,255,.55);padding:11px 13px;cursor:pointer;display:block;
+    transition:background .12s, border-color .12s;}
+  .depth label:hover{background:rgba(255,255,255,.92);}
+  .depth input{position:absolute;opacity:0;width:0;height:0;}
+  .dt{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13.5px;}
+  .dot{width:16px;height:16px;border-radius:50%;flex:none;
+       border:2px solid #c2c9d2;background:#fff;transition:border-color .12s, background .12s;}
+  .dd{font-size:11.5px;color:var(--ink-3);margin-top:4px;line-height:1.45;padding-left:25px;}
+  .depth label:has(input:checked){border-color:var(--sel-b);background:var(--sel);}
+  .depth label:has(input:checked) .dot{border-color:var(--dark);
+    background:radial-gradient(circle,#1f242b 0 42%,#fff 46%);}
+
+  .opts{display:flex;flex-direction:column;gap:11px;}
+  .opts label{display:flex;align-items:flex-start;gap:9px;cursor:pointer;
+    font-size:13px;color:var(--ink-2);line-height:1.45;}
+  .opts input{accent-color:var(--dark);width:16px;height:16px;cursor:pointer;flex:none;margin-top:2px;}
+
+  .fld{margin-bottom:10px;}
+  .fld:last-child{margin-bottom:0;}
+  .fldl{font-size:11.5px;color:var(--ink-3);font-weight:600;display:block;margin-bottom:5px;}
+  select{width:100%;font:inherit;font-size:13px;border:1px solid var(--edge-2);
+    border-radius:9px;padding:9px 10px;background:rgba(255,255,255,.82);
+    color:var(--ink-2);outline:none;cursor:pointer;}
+  select:focus{border-color:rgba(45,55,70,.5);}
+
+  .btn2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;}
+  .btn2 button{margin-top:0;width:100%;font-size:13px;}
+  .cnt{font-size:12.5px;color:var(--ink-3);margin-top:11px;text-align:center;}
+  .cnt b{color:var(--ink);font-weight:700;}
+
+  /* ================= main ================= */
+  main{min-width:0;}
+  .hero{margin-bottom:18px;}
+  .hero h1{font-size:26px;font-weight:700;letter-spacing:-.03em;margin:0 0 6px;line-height:1.3;}
+  .hero h1 em{font-style:normal;color:var(--ink-3);}
+  .hero p{margin:0;color:var(--ink-3);font-size:14px;}
+
+  .prog{overflow:hidden;display:none;margin-bottom:18px;}
+  .prog.on{display:block;}
+  .pbar{height:3px;background:rgba(60,72,90,.1);overflow:hidden;}
+  .pbar i{display:block;height:100%;width:30%;border-radius:3px;background:var(--dark);
+    animation:sl 1.15s ease-in-out infinite;will-change:transform;}
+  @keyframes sl{0%{transform:translateX(-110%);}100%{transform:translateX(440%);}}
+  .pbody{padding:15px 20px;display:flex;align-items:center;gap:13px;}
+  .pdot{width:8px;height:8px;border-radius:50%;background:var(--dark);flex:none;
+        animation:pu 1.3s ease-in-out infinite;}
+  @keyframes pu{0%,100%{opacity:1;}50%{opacity:.22;}}
+  .ptxt{font-size:14px;font-weight:600;}
+  .pnum{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ink);
+    background:var(--sel);padding:4px 13px;border-radius:20px;}
+  .plog{border-top:1px solid var(--edge-2);padding:9px 20px 11px;}
+  .plog div{font-size:11.5px;color:var(--ink-4);line-height:1.8;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .msg{padding:15px 20px;font-size:13.5px;color:var(--ink-2);margin-bottom:18px;}
+  .msg.err{border-color:rgba(179,57,44,.26);color:var(--red);background:rgba(253,242,240,.86);}
+
+  .rsrc{font-size:12.5px;color:var(--ink-3);margin-bottom:13px;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));
+         gap:12px;margin-bottom:18px;}
+  .stat{padding:14px 16px;border-radius:var(--r-s);}
+  .stat.key{background:linear-gradient(150deg,rgba(238,242,247,.95),rgba(228,234,242,.85));
+            border-color:var(--sel-b);}
+  .stat b{display:block;font-size:24px;font-weight:700;letter-spacing:-.03em;
+    line-height:1.28;font-variant-numeric:tabular-nums;}
+  .stat span{font-size:12px;color:var(--ink-3);}
+
+  /* ---- การ์ดรูป: ตัดเงาแบบ transition ออก ใช้ opacity ของ ::after แทน ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:16px;}
+  .card{position:relative;border-radius:var(--r);overflow:hidden;
+    display:flex;flex-direction:column;
+    content-visibility:auto;contain-intrinsic-size:auto 268px;
+    transition:transform .14s ease, border-color .14s ease;}
+  .card::after{content:"";position:absolute;inset:0;border-radius:var(--r);
+    pointer-events:none;opacity:0;transition:opacity .14s ease;
+    box-shadow:0 8px 22px rgba(24,34,48,.13);}
+  .card:hover{transform:translateY(-2px);}
+  .card:hover::after{opacity:1;}
+  .card.sel{border-color:var(--sel-b);}
+  .card.sel::after{opacity:1;box-shadow:0 0 0 2px rgba(40,50,64,.2);}
+  .ph{height:150px;position:relative;cursor:zoom-in;display:flex;
+    align-items:center;justify-content:center;overflow:hidden;
+    background:
+      linear-gradient(45deg,rgba(206,214,224,.4) 25%,transparent 25%,transparent 75%,rgba(206,214,224,.4) 75%),
+      linear-gradient(45deg,rgba(206,214,224,.4) 25%,rgba(255,255,255,.6) 25%,rgba(255,255,255,.6) 75%,rgba(206,214,224,.4) 75%);
+    background-size:16px 16px;background-position:0 0,8px 8px;
+    border-bottom:1px solid var(--edge-2);}
+  .ph img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+  .ph .none{font-size:12px;color:var(--ink-4);}
+  .pick{position:absolute;top:10px;left:10px;width:25px;height:25px;border-radius:8px;
+    background:rgba(255,255,255,.92);border:1px solid var(--edge-2);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:background .12s;}
+  .card.sel .pick{background:var(--dark);border-color:transparent;}
+  .pick input{accent-color:var(--dark);cursor:pointer;margin:0;width:13px;height:13px;}
+  .card.sel .pick input{filter:brightness(3.6) grayscale(1);}
+  .badge{position:absolute;right:9px;bottom:9px;color:#fff;font-size:11px;
+    padding:3px 9px;border-radius:7px;background:rgba(22,28,36,.72);
+    font-variant-numeric:tabular-nums;}
+  .cb{padding:12px 13px 10px;flex:1;min-width:0;}
+  .cn{font-weight:600;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cu{font-family:"Consolas","Courier New",monospace;font-size:10.5px;color:var(--ink-4);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;
+    text-align:left;margin-top:3px;}
+  .cmeta{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px;}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;
+    background:rgba(120,135,155,.14);color:var(--ink-3);}
+  .tag.hi{background:rgba(31,36,43,.1);color:var(--ink);}
+  .ca{display:flex;border-top:1px solid var(--edge-2);}
+  .ca button{flex:1;border:none;border-radius:0;padding:9px 4px;font-size:12.5px;
+    font-weight:600;color:var(--ink-2);background:rgba(255,255,255,.3);}
+  .ca button+button{border-left:1px solid var(--edge-2);}
+  .ca button:hover{background:var(--sel);color:var(--ink);}
+
+  .tbl{overflow:hidden;}
+  .tblin{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{text-align:left;font-size:11.5px;font-weight:700;color:var(--ink-3);
+    padding:12px 14px;background:rgba(255,255,255,.5);
+    border-bottom:1px solid var(--edge-2);white-space:nowrap;}
+  tbody td{padding:9px 14px;border-bottom:1px solid var(--edge-2);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(120,135,155,.07);}
+  tbody tr.sel{background:var(--sel);}
+  tbody input[type=checkbox]{accent-color:var(--dark);width:15px;height:15px;cursor:pointer;}
+  .thumb{width:54px;height:40px;object-fit:contain;border-radius:7px;
+    background:rgba(206,214,224,.4);display:block;cursor:zoom-in;}
+  .fname{font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .falt{font-size:11.5px;color:var(--ink-4);max-width:220px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;}
+  .ucell{max-width:1px;}
+  .utxt{font-family:"Consolas","Courier New",monospace;font-size:11.5px;color:var(--ink-2);
+    display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .num{font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap;}
+  td.act{white-space:nowrap;text-align:right;}
+  td.act button{margin-left:4px;}
+
+  .empty{padding:70px 24px;text-align:center;}
+  .empty p{margin:0;color:var(--ink-2);font-size:15px;font-weight:600;}
+  .empty p+p{margin-top:8px;color:var(--ink-3);font-size:13px;font-weight:400;}
+
+  /* lightbox — ที่เดียวที่ยังใช้เบลอจริง เพราะแสดงทีละครั้ง */
+  #lb{position:fixed;inset:0;display:none;z-index:80;align-items:center;
+      justify-content:center;padding:40px;background:rgba(20,26,34,.55);}
+  @supports ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+    #lb{background:rgba(20,26,34,.4);
+        -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
+  }
+  #lb.on{display:flex;}
+  .lbox{background:rgba(255,255,255,.96);border:1px solid var(--edge);border-radius:18px;
+    max-width:940px;width:100%;max-height:100%;display:flex;flex-direction:column;
+    overflow:hidden;box-shadow:0 20px 60px rgba(16,24,34,.32);}
+  .lbh{padding:15px 20px;border-bottom:1px solid var(--edge-2);
+    display:flex;align-items:center;gap:12px;}
+  .lbh .nm{font-weight:700;font-size:14.5px;flex:1;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;}
+  .lbi{flex:1;min-height:180px;display:flex;align-items:center;justify-content:center;
+    padding:20px;overflow:auto;background:rgba(236,240,245,.7);}
+  .lbi img{max-width:100%;max-height:58vh;object-fit:contain;border-radius:8px;}
+  .lbf{padding:14px 20px;border-top:1px solid var(--edge-2);
+    display:flex;gap:10px;align-items:center;}
+  .lbu{flex:1;font-family:"Consolas","Courier New",monospace;font-size:11.5px;
+    color:var(--ink-2);background:rgba(255,255,255,.8);border:1px solid var(--edge-2);
+    border-radius:9px;padding:9px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);
+    background:rgba(23,29,37,.94);color:#fff;padding:12px 24px;font-size:13.5px;
+    border-radius:11px;opacity:0;pointer-events:none;z-index:95;
+    transition:opacity .16s ease, transform .16s ease;
+    box-shadow:0 8px 26px rgba(16,24,34,.28);}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.35);
+    border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;
+    vertical-align:-2px;margin-right:8px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  footer{border-top:1px solid var(--edge-2);background:rgba(255,255,255,.45);}
+  .foot{max-width:1420px;margin:0 auto;padding:18px 26px;font-size:12.5px;
+    color:var(--ink-3);display:flex;gap:18px;flex-wrap:wrap;}
+
+  @media(max-width:980px){
+    .shell{grid-template-columns:1fr;padding:18px 15px 70px;}
+    aside{position:static;max-height:none;overflow:visible;}
+    .head{padding:0 15px;}
+    .hsub{display:none;}
+    .hero h1{font-size:22px;}
+    body{background-attachment:scroll;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head">
+    <img class="mark" src="/static/icon.png" alt="Auto Link Photo">
+    <div class="brand">
+      <div class="htitle">AUTO LINK <span>PHOTO</span></div>
+      <div class="hcap">ตัวดึงลิงก์รูปภาพ</div>
+    </div>
+    <div class="hsub">ค้นหาและคัดลอกที่อยู่รูปภาพต้นฉบับจากหน้าเว็บ</div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <aside>
+
+    <section class="glass sec">
+      <div class="sechd"><span class="no">1</span><span class="sectt">ที่อยู่เว็บไซต์</span></div>
+      <input type="text" id="url" spellcheck="false" autocomplete="off"
+             placeholder="เช่น example.com/gallery">
+      <button class="go" id="go">เริ่มค้นหา</button>
+      <button class="wide" id="stop" style="display:none">หยุดค้นหา</button>
+    </section>
+
+    <section class="glass sec">
+      <div class="sechd"><span class="no">2</span><span class="sectt">ความละเอียดในการค้นหา</span></div>
+      <div class="depth">
+        <label>
+          <input type="radio" name="lv" value="1">
+          <span class="dt"><span class="dot"></span>เร็ว</span>
+          <span class="dd">ค้นหารูปที่แสดงอยู่ในหน้าเท่านั้น</span>
+        </label>
+        <label>
+          <input type="radio" name="lv" value="2" checked>
+          <span class="dt"><span class="dot"></span>ปกติ · แนะนำ</span>
+          <span class="dd">ค้นหารูปที่ซ่อนอยู่ในโค้ดของหน้าด้วย</span>
+        </label>
+        <label>
+          <input type="radio" name="lv" value="3">
+          <span class="dt"><span class="dot"></span>ละเอียดสูงสุด</span>
+          <span class="dd">ค้นหาทุกซอกทุกมุม พร้อมหาไฟล์ต้นฉบับความคมชัดสูง</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="glass sec">
+      <div class="sechd"><span class="no">3</span><span class="sectt">ตัวเลือกเพิ่มเติม</span></div>
+      <div class="opts">
+        <label><input type="checkbox" id="oOrig" checked> ค้นหาไฟล์ต้นฉบับที่คมชัดกว่า</label>
+        <label><input type="checkbox" id="oVerify" checked> ตรวจสอบขนาดไฟล์จริง</label>
+        <label><input type="checkbox" id="oFollow"> ค้นหาหน้าอื่นในเว็บไซต์เดียวกันด้วย</label>
+        <label><input type="checkbox" id="oData"> รวมรูปที่ฝังในโค้ด</label>
+      </div>
+    </section>
+
+    <section class="glass sec" id="secFilter" hidden>
+      <div class="sechd"><span class="no">4</span><span class="sectt">กรองผลลัพธ์</span></div>
+      <div class="fld">
+        <label class="fldl" for="q">ค้นหาชื่อไฟล์</label>
+        <input type="text" id="q" placeholder="พิมพ์คำที่ต้องการ">
+      </div>
+      <div class="fld">
+        <label class="fldl" for="fExt">นามสกุลไฟล์</label>
+        <select id="fExt"><option value="">ทุกนามสกุล</option></select>
+      </div>
+      <div class="fld">
+        <label class="fldl" for="fMin">ขนาดไฟล์</label>
+        <select id="fMin">
+          <option value="0">ทุกขนาด</option>
+          <option value="10240">ใหญ่กว่า 10 KB</option>
+          <option value="51200">ใหญ่กว่า 50 KB</option>
+          <option value="204800">ใหญ่กว่า 200 KB</option>
+          <option value="1048576">ใหญ่กว่า 1 MB</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label class="fldl" for="sort">การเรียงลำดับ</label>
+        <select id="sort">
+          <option value="doc">ลำดับที่พบ</option>
+          <option value="size">ขนาดใหญ่ไปเล็ก</option>
+          <option value="name">ชื่อไฟล์</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="glass sec" id="secAction" hidden>
+      <div class="sechd"><span class="no">5</span><span class="sectt">จัดการรายการ</span></div>
+      <div class="btn2">
+        <button class="sm" id="bAll">เลือกทั้งหมด</button>
+        <button class="sm" id="bNone">ล้างที่เลือก</button>
+      </div>
+      <button class="wide" id="bCopy">คัดลอกลิงก์ที่เลือก</button>
+      <button class="wide" id="bZip">บันทึกเป็น ZIP</button>
+      <button class="wide" id="bView">สลับเป็นมุมมองตาราง</button>
+      <div class="cnt">เลือก <b id="nSel">0</b> จาก <b id="nShow">0</b> รายการ</div>
+    </section>
+
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <h1>ดึงรูปภาพจากหน้าเว็บ <em>ได้ทุกซอกทุกมุม</em></h1>
+      <p>กรอกที่อยู่เว็บไซต์ในเมนูด้านซ้าย เลือกความละเอียด แล้วกดเริ่มค้นหา</p>
+    </div>
+
+    <div class="glass prog" id="prog">
+      <div class="pbar"><i></i></div>
+      <div class="pbody">
+        <span class="pdot"></span>
+        <span class="ptxt" id="pTxt">กำลังเริ่มต้น</span>
+        <span class="pnum" id="pNum" style="display:none"></span>
+      </div>
+      <div class="plog" id="pLog"></div>
+    </div>
+
+    <div id="msg"></div>
+
+    <div id="out" hidden>
+      <div class="rsrc" id="origin"></div>
+      <div class="stats" id="stats"></div>
+      <div id="view"></div>
+    </div>
+
+  </main>
+</div>
+
+<footer><div class="foot">
+  <span>ที่อยู่รูปภาพทั้งหมดเป็นลิงก์ต้นฉบับจากเว็บไซต์ปลายทางโดยตรง</span>
+  <span style="margin-left:auto">โปรดตรวจสอบเงื่อนไขลิขสิทธิ์ก่อนนำภาพไปใช้</span>
+</div></footer>
+
+<div id="lb">
+  <div class="lbox">
+    <div class="lbh">
+      <span class="nm" id="lbName"></span>
+      <button class="sm" id="lbX">ปิด</button>
+    </div>
+    <div class="lbi"><img id="lbImg" alt=""></div>
+    <div class="lbf">
+      <span class="lbu" id="lbUrl"></span>
+      <button class="sm" id="lbCopy">คัดลอกลิงก์</button>
+      <button class="sm" id="lbOpen">เปิดต้นฉบับ</button>
+      <button class="sm" id="lbSave">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const SRC = {
+    img:"ในหน้า", srcset:"ชุดความละเอียด", lazy:"โหลดภายหลัง", picture:"พิกเจอร์",
+    meta:"ข้อมูลหน้า", icon:"ไอคอน", css:"สไตล์", "css-file":"ไฟล์สไตล์",
+    script:"สคริปต์", "js-file":"ไฟล์สคริปต์", "json-ld":"ข้อมูลโครงสร้าง",
+    noscript:"เนื้อหาสำรอง", "data-attr":"ข้อมูลแฝง", svg:"เวกเตอร์",
+    link:"ลิงก์ไฟล์", original:"ต้นฉบับคมชัด", direct:"ไฟล์โดยตรง",
+    iframe:"เฟรมย่อย", video:"วิดีโอ", object:"อ็อบเจกต์", embed:"ฝัง", input:"อินพุต"
+  };
+
+  let DATA=[], INFO={}, VIEW="grid", ES=null, LB=null, SHOWN=[];
+  const SEL = new Set();
+  const PAGE = 60;              // แสดงทีละชุด แล้วเติมเมื่อเลื่อนถึง
+  let shownCount = 0, io = null;
+
+  const toast = (()=>{ let t; return m=>{
+    const e=$("#toast"); e.textContent=m; e.classList.add("on");
+    clearTimeout(t); t=setTimeout(()=>e.classList.remove("on"),1900);
+  };})();
+
+  const esc = s => String(s==null?"":s).replace(/[&<>"']/g,
+    c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  function bytes(n){
+    if(n==null) return "";
+    if(n<1024) return n+" B";
+    if(n<1048576) return (n/1024).toFixed(0)+" KB";
+    return (n/1048576).toFixed(2)+" MB";
+  }
+  const px = u => u.startsWith("data:") ? u : "/api/proxy?url="+encodeURIComponent(u);
+
+  async function copy(t){
+    try{ await navigator.clipboard.writeText(t); return true; }
+    catch(e){
+      const a=document.createElement("textarea");
+      a.value=t; a.style.cssText="position:fixed;opacity:0";
+      document.body.appendChild(a); a.select();
+      let ok=false; try{ ok=document.execCommand("copy"); }catch(_){}
+      a.remove(); return ok;
+    }
+  }
+
+  function rows(){
+    const q=$("#q").value.trim().toLowerCase(), ex=$("#fExt").value,
+          mn=+$("#fMin").value, so=$("#sort").value;
+    let r=DATA.filter(d=>{
+      if(ex && d.ext!==ex) return false;
+      if(q && !(d.filename.toLowerCase().includes(q)||d.url.toLowerCase().includes(q))) return false;
+      if(mn){ const b=(INFO[d.url]||{}).bytes; if(b==null||b<mn) return false; }
+      return true;
+    });
+    if(so==="size") r.sort((a,b)=>((INFO[b.url]||{}).bytes||0)-((INFO[a.url]||{}).bytes||0));
+    else if(so==="name") r.sort((a,b)=>a.filename.localeCompare(b.filename,"th"));
+    return r;
+  }
+
+  function cardHTML(d){
+    const i=INFO[d.url]||{}, dim=(d.width&&d.height)?d.width+"×"+d.height:"", sz=bytes(i.bytes);
+    return `<article class="glass card${SEL.has(d.url)?" sel":""}" data-u="${esc(d.url)}">
+      <div class="ph" data-zoom>
+        <img loading="lazy" decoding="async" src="${esc(px(d.url))}" alt=""
+          onerror="this.remove();this.parentNode.insertAdjacentHTML('beforeend','<span class=none>แสดงตัวอย่างไม่ได้</span>')">
+        <span class="pick"><input type="checkbox" ${SEL.has(d.url)?"checked":""}></span>
+        ${sz?`<span class="badge">${sz}</span>`:""}
+      </div>
+      <div class="cb">
+        <div class="cn" title="${esc(d.filename)}">${esc(d.filename)}</div>
+        <div class="cu" title="${esc(d.url)}">${esc(d.url)}</div>
+        <div class="cmeta">
+          <span class="tag">${esc(d.ext)}</span>
+          <span class="tag${d.source==="original"?" hi":""}">${esc(SRC[d.source]||d.source)}</span>
+          ${dim?`<span class="tag">${esc(dim)}</span>`:""}
+        </div>
+      </div>
+      <div class="ca">
+        <button data-a="copy">คัดลอกลิงก์</button>
+        <button data-a="open">เปิด</button>
+        <button data-a="save">บันทึก</button>
+      </div>
+    </article>`;
+  }
+
+  function rowHTML(d){
+    const i=INFO[d.url]||{};
+    return `<tr class="${SEL.has(d.url)?"sel":""}" data-u="${esc(d.url)}">
+      <td><input type="checkbox" ${SEL.has(d.url)?"checked":""}></td>
+      <td><img class="thumb" loading="lazy" decoding="async" data-zoom src="${esc(px(d.url))}" alt=""
+           onerror="this.style.visibility='hidden'"></td>
+      <td><div class="fname" title="${esc(d.filename)}">${esc(d.filename)}</div>
+          ${d.alt?`<div class="falt">${esc(d.alt)}</div>`:""}</td>
+      <td class="ucell"><span class="utxt" title="${esc(d.url)}">${esc(d.url)}</span></td>
+      <td><span class="tag">${esc(d.ext)}</span></td>
+      <td><span class="tag${d.source==="original"?" hi":""}">${esc(SRC[d.source]||d.source)}</span></td>
+      <td class="num">${bytes(i.bytes)||"—"}</td>
+      <td class="act">
+        <button class="sm" data-a="copy">คัดลอก</button>
+        <button class="sm" data-a="open">เปิด</button>
+        <button class="sm" data-a="save">บันทึก</button>
+      </td></tr>`;
+  }
+
+  function appendMore(){
+    if(shownCount >= SHOWN.length) return;
+    const next = SHOWN.slice(shownCount, shownCount + PAGE);
+    shownCount += next.length;
+    if(VIEW==="grid"){
+      $("#view").insertAdjacentHTML("beforeend", next.map(cardHTML).join(""));
+    } else {
+      $("#view").querySelector("tbody").insertAdjacentHTML("beforeend", next.map(rowHTML).join(""));
+    }
+    setSentinel();
+  }
+
+  function setSentinel(){
+    if(io){ io.disconnect(); io=null; }
+    if(shownCount >= SHOWN.length) return;
+    const box=$("#view");
+    const last = VIEW==="grid" ? box.lastElementChild
+                               : box.querySelector("tbody").lastElementChild;
+    if(!last) return;
+    io = new IntersectionObserver(es=>{
+      if(es.some(e=>e.isIntersecting)) appendMore();
+    }, {rootMargin:"600px 0px"});
+    io.observe(last);
+  }
+
+  function render(){
+    SHOWN = rows(); shownCount = 0;
+    const box=$("#view");
+    $("#nShow").textContent=SHOWN.length; $("#nSel").textContent=SEL.size;
+    if(io){ io.disconnect(); io=null; }
+
+    if(!SHOWN.length){
+      box.className="glass empty";
+      box.innerHTML = DATA.length
+        ? "<p>ไม่มีรายการที่ตรงกับเงื่อนไข</p><p>ลองล้างคำค้นหาหรือเปลี่ยนตัวกรองในเมนูด้านซ้าย</p>"
+        : "<p>ไม่พบรูปภาพในหน้านี้</p><p>ลองเลือกความละเอียดในการค้นหาให้สูงขึ้น</p>";
+      return;
+    }
+
+    if(VIEW==="grid"){
+      box.className="grid"; box.innerHTML="";
+    } else {
+      box.className="glass tbl";
+      box.innerHTML=`<div class="tblin"><table><thead><tr>
+        <th style="width:36px"></th><th style="width:70px">ตัวอย่าง</th>
+        <th>ชื่อไฟล์</th><th class="ucell">ที่อยู่ต้นฉบับ</th>
+        <th style="width:64px">ชนิด</th><th style="width:114px">แหล่งที่พบ</th>
+        <th style="width:86px">ขนาด</th><th style="width:178px"></th>
+        </tr></thead><tbody></tbody></table></div>`;
+    }
+    appendMore();
+  }
+
+  function stats(res){
+    let known=0,sum=0;
+    DATA.forEach(d=>{ const b=(INFO[d.url]||{}).bytes; if(b){known++;sum+=b;} });
+    const st=res.stats||{};
+    const cells=[["รูปภาพที่พบ",DATA.length,true],
+                 ["ปริมาณข้อมูลรวม",known?bytes(sum):"—",false],
+                 ["ไฟล์ต้นฉบับที่พบเพิ่ม",st.originals||0,(st.originals||0)>0],
+                 ["หน้าที่ค้นหา",st.pages||1,false],
+                 ["ลิงก์เสียที่ตัดออก",st.removed||0,false]];
+    $("#stats").innerHTML=cells.map(([l,v,k])=>
+      `<div class="glass stat${k?" key":""}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
+  }
+
+  // ---------------- interactions ----------------
+  $("#view").addEventListener("click", e=>{
+    const host=e.target.closest("[data-u]"); if(!host) return;
+    const u=host.dataset.u;
+    if(e.target.matches('input[type=checkbox]')){
+      e.target.checked?SEL.add(u):SEL.delete(u);
+      host.classList.toggle("sel",e.target.checked);
+      $("#nSel").textContent=SEL.size; return;
+    }
+    if(e.target.closest(".pick")){
+      const c=host.querySelector('input[type=checkbox]');
+      c.checked=!c.checked; c.checked?SEL.add(u):SEL.delete(u);
+      host.classList.toggle("sel",c.checked);
+      $("#nSel").textContent=SEL.size; return;
+    }
+    if(e.target.hasAttribute("data-zoom")||e.target.closest("[data-zoom]")){ openLB(u); return; }
+    const a=e.target.dataset.a;
+    if(a==="copy") copy(u).then(ok=>toast(ok?"คัดลอกที่อยู่แล้ว":"คัดลอกไม่สำเร็จ"));
+    else if(a==="open") window.open(u,"_blank","noopener");
+    else if(a==="save") location.href="/api/download?url="+encodeURIComponent(u);
+  });
+
+  function openLB(u){
+    const d=DATA.find(x=>x.url===u); if(!d) return;
+    LB=u; $("#lbName").textContent=d.filename;
+    $("#lbUrl").textContent=u; $("#lbImg").src=px(u);
+    $("#lb").classList.add("on");
+  }
+  $("#lbX").onclick=()=>$("#lb").classList.remove("on");
+  $("#lb").onclick=e=>{ if(e.target.id==="lb") $("#lb").classList.remove("on"); };
+  $("#lbCopy").onclick=async()=>toast(await copy(LB)?"คัดลอกที่อยู่แล้ว":"คัดลอกไม่สำเร็จ");
+  $("#lbOpen").onclick=()=>window.open(LB,"_blank","noopener");
+  $("#lbSave").onclick=()=>location.href="/api/download?url="+encodeURIComponent(LB);
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#lb").classList.remove("on"); });
+
+  let qt=null;
+  $("#q").addEventListener("input",()=>{ clearTimeout(qt); qt=setTimeout(render,140); });
+  ["fExt","fMin","sort"].forEach(id=>$("#"+id).addEventListener("change",render));
+  $("#bAll").onclick=()=>{ rows().forEach(d=>SEL.add(d.url)); render(); };
+  $("#bNone").onclick=()=>{ SEL.clear(); render(); };
+  $("#bView").onclick=()=>{ VIEW=VIEW==="grid"?"table":"grid";
+    $("#bView").textContent=VIEW==="grid"?"สลับเป็นมุมมองตาราง":"สลับเป็นมุมมองรูปภาพ"; render(); };
+
+  $("#bCopy").onclick=async()=>{
+    const l=rows().filter(d=>SEL.has(d.url)).map(d=>d.url);
+    if(!l.length) return toast("ยังไม่ได้เลือกรายการ");
+    toast(await copy(l.join("\n"))?`คัดลอก ${l.length} ลิงก์แล้ว`:"คัดลอกไม่สำเร็จ");
+  };
+
+  $("#bZip").onclick=async()=>{
+    const l=rows().filter(d=>SEL.has(d.url)&&!d.url.startsWith("data:")).map(d=>d.url);
+    if(!l.length) return toast("ยังไม่ได้เลือกรายการ");
+    const b=$("#bZip"), old=b.textContent;
+    b.disabled=true; b.textContent="กำลังรวมไฟล์…";
+    try{
+      const res=await fetch("/api/download-zip",{method:"POST",
+        headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:l})});
+      if(!res.ok) throw 0;
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(await res.blob()); a.download="images.zip"; a.click();
+      URL.revokeObjectURL(a.href);
+    }catch(_){ toast("บันทึกไม่สำเร็จ"); }
+    b.disabled=false; b.textContent=old;
+  };
+
+  // ---------------- scan ----------------
+  function log(t){
+    const l=$("#pLog"), d=document.createElement("div");
+    d.textContent=t; l.prepend(d);
+    while(l.children.length>3) l.lastChild.remove();
+  }
+  // ยังมีของตามมาอีกไหม
+  //
+  // ตัวเลือกคุณภาพมาคนละสายกับผลค้นหา ใครเสร็จก่อนมาก่อน
+  // เคยพลาดตรงนี้มาแล้ว วางสายทันทีที่ผลค้นหามาถึง ตัวเลือกจึงไม่มีวันมา
+  // หน้าจอค้างที่ "กำลังอ่านคุณภาพ" ตลอดกาล ต้องกดค้นใหม่อีกรอบถึงจะได้
+  // จะวางสายได้ต้องได้ครบทั้งสองอย่างก่อน
+  let QWAIT=false, RGOT=false;
+
+  function finish(){
+    if(ES && !QWAIT){ ES.close(); ES=null; }
+    $("#prog").classList.remove("on");
+    $("#go").disabled=false; $("#go").textContent="เริ่มค้นหา";
+    $("#stop").style.display="none";
+  }
+
+  function hangUp(){
+    QWAIT=false;
+    if(ES){ ES.close(); ES=null; }
+  }
+
+  function start(){
+    const url=$("#url").value.trim();
+    if(!url){ $("#url").focus(); return; }
+    const p=new URLSearchParams({
+      url, level:document.querySelector('input[name=lv]:checked').value,
+      data_uri:$("#oData").checked?1:0, follow:$("#oFollow").checked?1:0,
+      originals:$("#oOrig").checked?1:0, verify:$("#oVerify").checked?1:0,
+    });
+
+    SEL.clear(); DATA=[]; INFO={};
+    $("#msg").innerHTML=""; $("#out").hidden=true;
+    $("#secFilter").hidden=true; $("#secAction").hidden=true;
+    $("#pLog").innerHTML=""; $("#pTxt").textContent="กำลังเชื่อมต่อ";
+    $("#pNum").style.display="none";
+    $("#prog").classList.add("on");
+    $("#go").disabled=true; $("#go").innerHTML='<span class="spin"></span>กำลังค้นหา';
+    $("#stop").style.display="";
+
+    ES=new EventSource("/api/scan-stream?"+p.toString());
+
+    ES.addEventListener("progress",ev=>{
+      const d=JSON.parse(ev.data);
+      $("#pTxt").textContent=d.text;
+      if(d.stage==="found"){
+        const e=$("#pNum");
+        e.style.display=""; e.textContent="พบแล้ว "+d.text.replace(/\D+/g,"")+" รูป";
+      } else log(d.text);
+    });
+
+    ES.addEventListener("result",ev=>{
+      const r=JSON.parse(ev.data);
+      DATA=r.images||[]; INFO=r.info||{};
+      finish();
+      const exts=[...new Set(DATA.map(d=>d.ext))].sort();
+      $("#fExt").innerHTML='<option value="">ทุกนามสกุล</option>'+
+        exts.map(e=>`<option value="${esc(e)}">${esc(e)}</option>`).join("");
+      $("#origin").textContent=(r.page_title?r.page_title+" — ":"")+r.page_url;
+      $("#out").hidden=false;
+      $("#secFilter").hidden=false; $("#secAction").hidden=false;
+      stats(r); render();
+      if(DATA.length) toast("พบรูปภาพ "+DATA.length+" รายการ");
+    });
+
+    ES.addEventListener("failed",ev=>{
+      finish();
+      $("#msg").innerHTML=`<div class="glass msg err">${esc(JSON.parse(ev.data).error||"ค้นหาไม่สำเร็จ")}</div>`;
+    });
+
+    ES.onerror=()=>{
+      if(!ES) return;
+      finish();
+      if(!DATA.length && !$("#msg").innerHTML)
+        $("#msg").innerHTML='<div class="glass msg err">การเชื่อมต่อขาดตอน กรุณาลองใหม่อีกครั้ง</div>';
+    };
+  }
+
+  $("#go").onclick=start;
+  $("#stop").onclick=()=>{ hangUp(); finish(); $("#msg").innerHTML='<div class="glass msg">หยุดการค้นหาแล้ว</div>'; };
+  $("#url").addEventListener("keydown",e=>{ if(e.key==="Enter") start(); });
+})();
+</script>
+</body>
+</html>
