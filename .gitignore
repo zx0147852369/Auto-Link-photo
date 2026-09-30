@@ -8,12 +8,6 @@ content.json
 static/avatars/
 static/decoded/
 
-# ไฟล์สำรอง / กู้คืน
-_broken_backup/
-_restored/
-_salvage/
-_restore_report.txt
-กำลังกู้คืน.txt
 
 # อื่น ๆ
 __pycache__/
