@@ -13,3 +13,16 @@ static/decoded/
 __pycache__/
 *.pyc
 .claude/
+
+# ไฟล์เสีย (ข้างในเป็นค่าว่างทั้งไฟล์) — เอาบรรทัดออกเมื่อได้ไฟล์ฉบับดีแล้ว
+static/icon.png
+static/logo.png
+static/banners/promo-1.jpg
+static/banners/promo-1.webp
+static/banners/promo-2.jpg
+static/banners/promo-2.webp
+admin.py
+templates/panel/logs.html
+templates/panel/texts.html
+templates/panel/tokens.html
+templates/panel/user.html
