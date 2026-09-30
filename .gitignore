@@ -12,4 +12,4 @@ static/decoded/
 # อื่น ๆ
 __pycache__/
 *.pyc
-.claude/settings.local.json
+.claude/
